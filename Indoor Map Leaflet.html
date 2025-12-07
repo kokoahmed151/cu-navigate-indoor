@@ -1688,7 +1688,7 @@ map.on('load', async ()=>{
     return false;
   }
 
-  // ===== AI CHAT HOOKUP =====
+   // ===== AI CHAT HOOKUP =====
   const aiMessages = document.getElementById('ai-messages');
   const aiInput    = document.getElementById('ai-input');
   const aiSendBtn  = document.getElementById('ai-send-btn');
@@ -1726,36 +1726,39 @@ map.on('load', async ()=>{
     aiMessages.scrollTop = aiMessages.scrollHeight;
   }
 
-  async function sendAiMessage(){
-  const msg = (aiInput.value || '').trim();
-  if(!msg) return;
-  appendAiMessage('user', msg);
-  aiInput.value = '';
+  // 👇 نحدد الـ API base: لو لوكال يستعمل localhost، لو لا يستعمل Railway
+  const apiBase =
+    window.location.hostname === "localhost"
+      ? "http://localhost:3000"
+      : "https://cu-navigate-indoor-production.up.railway.app";
 
-  try{
-    const apiBase = window.location.origin;
-    const res = await fetch(apiBase + '/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json' },
-      body: JSON.stringify({
-        message: msg,
-        profile: studentProfile,
-        schedule: currentSchedule
-      })
-    });
-    // ...
+  async function sendAiMessage() {
+    const msg = (aiInput.value || "").trim();
+    if (!msg) return;
+    appendAiMessage("user", msg);
+    aiInput.value = "";
 
+    try {
+      const res = await fetch(`${apiBase}/api/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: msg,
+          profile: studentProfile,
+          schedule: currentSchedule,
+        }),
+      });
 
-      if(!res.ok){
-        appendAiMessage('ai', '❌ حصل خطأ في الاتصال بالسيرفر.');
+      if (!res.ok) {
+        appendAiMessage("ai", "❌ حصل خطأ في الاتصال بالسيرفر.");
         return;
       }
 
       const data = await res.json();
-      appendAiMessage('ai', data.reply || 'ماقدرتش أطلع رد يا نجم.');
-    } catch(err){
-      console.error('AI error:', err);
-      appendAiMessage('ai', '⚠️ حصل Error في الاتصال بالـ AI.');
+      appendAiMessage("ai", data.reply || "ماقدرتش أطلع رد يا نجم.");
+    } catch (err) {
+      console.error("AI error:", err);
+      appendAiMessage("ai", "⚠️ حصل Error في الاتصال بالـ AI.");
     }
   }
 
@@ -1766,7 +1769,8 @@ map.on('load', async ()=>{
     });
   }
 
-  appendAiMessage('ai', 'أهلا بيك في CU Navigate AI 👋 اسألني عن محاضراتك أو قولّي مثلاً: فين HALL161؟ أو ودّيني من HALL161 لـ HALL655.');
+  // رسالة ترحيب أول ما يفتح البوت
+  appendAiMessage('ai', 'أهلا بيك في CU Navigate AI 👋 اسألني عن محاضراتك أو أي سؤال تاني.');
 
   // ===== User panel toggle =====
   const userPanel = document.getElementById('user-panel');
