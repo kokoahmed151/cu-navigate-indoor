@@ -1555,7 +1555,9 @@ function updateRouteStyleForCurrentLevel() {
     aiInput.value = '';
 
     try{
-      const res = await fetch('http://localhost:3000/api/chat', {
+      const apiBase = window.location.origin;
+      const res = await fetch(apiBase + '/api/chat', {
+
         method: 'POST',
         headers: { 'Content-Type':'application/json' },
         body: JSON.stringify({
