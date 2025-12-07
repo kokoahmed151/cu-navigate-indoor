@@ -1549,23 +1549,24 @@ function updateRouteStyleForCurrentLevel() {
   }
 
   async function sendAiMessage(){
-    const msg = (aiInput.value || '').trim();
-    if(!msg) return;
-    appendAiMessage('user', msg);
-    aiInput.value = '';
+  const msg = (aiInput.value || '').trim();
+  if(!msg) return;
+  appendAiMessage('user', msg);
+  aiInput.value = '';
 
-    try{
-      const apiBase = window.location.origin;
-      const res = await fetch(apiBase + '/api/chat', {
+  try{
+    const apiBase = window.location.origin;
+    const res = await fetch(apiBase + '/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({
+        message: msg,
+        profile: studentProfile,
+        schedule: currentSchedule
+      })
+    });
+    // ...
 
-        method: 'POST',
-        headers: { 'Content-Type':'application/json' },
-        body: JSON.stringify({
-          message: msg,
-          profile: studentProfile,
-          schedule: currentSchedule
-        })
-      });
 
       if(!res.ok){
         appendAiMessage('ai', '❌ حصل خطأ في الاتصال بالسيرفر.');
