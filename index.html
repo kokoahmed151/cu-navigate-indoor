@@ -1689,52 +1689,57 @@ map.on('load', async ()=>{
   }
 
   // ===== AI CHAT HOOKUP =====
-  const aiMessages = document.getElementById('ai-messages');
-  const aiInput    = document.getElementById('ai-input');
-  const aiSendBtn  = document.getElementById('ai-send-btn');
-  const aiPanel    = document.getElementById('ai-panel');
-  const aiToggleBtn= document.getElementById('ai-toggle-btn');
+const aiMessages = document.getElementById('ai-messages');
+const aiInput    = document.getElementById('ai-input');
+const aiSendBtn  = document.getElementById('ai-send-btn');
+const aiPanel    = document.getElementById('ai-panel');
+const aiToggleBtn= document.getElementById('ai-toggle-btn');
 
-  let aiPanelOpen = false;
+let aiPanelOpen = false;
 
-  function openAiPanel(){
-    if(aiPanel){
-      aiPanel.style.display = 'flex';
-      aiPanelOpen = true;
-    }
+// 👇 مهم جداً: نختار الـ API URL حسب المكان اللي الصفحة شغّالة منه
+const apiBase =
+  window.location.hostname === "localhost"
+    ? "http://localhost:3000" // لما تكون شغّال عندك على الجهاز
+    : "https://cu-navigate-indoor-production.up.railway.app"; // backend على Railway
+
+function openAiPanel(){
+  if(aiPanel){
+    aiPanel.style.display = 'flex';
+    aiPanelOpen = true;
   }
-  function closeAiPanel(){
-    if(aiPanel){
-      aiPanel.style.display = 'none';
-      aiPanelOpen = false;
-    }
+}
+function closeAiPanel(){
+  if(aiPanel){
+    aiPanel.style.display = 'none';
+    aiPanelOpen = false;
   }
+}
 
-  if(aiToggleBtn){
-    aiToggleBtn.onclick = ()=>{
-      if(aiPanelOpen) closeAiPanel();
-      else openAiPanel();
-    };
-  }
+if(aiToggleBtn){
+  aiToggleBtn.onclick = ()=>{
+    if(aiPanelOpen) closeAiPanel();
+    else openAiPanel();
+  };
+}
 
-  function appendAiMessage(sender, text){
-    if(!aiMessages) return;
-    const div = document.createElement('div');
-    div.className = 'ai-msg ' + (sender === 'user' ? 'ai-msg-user' : 'ai-msg-ai');
-    div.textContent = text;
-    aiMessages.appendChild(div);
-    aiMessages.scrollTop = aiMessages.scrollHeight;
-  }
+function appendAiMessage(sender, text){
+  if(!aiMessages) return;
+  const div = document.createElement('div');
+  div.className = 'ai-msg ' + (sender === 'user' ? 'ai-msg-user' : 'ai-msg-ai');
+  div.textContent = text;
+  aiMessages.appendChild(div);
+  aiMessages.scrollTop = aiMessages.scrollHeight;
+}
 
-  async function sendAiMessage(){
+async function sendAiMessage(){
   const msg = (aiInput.value || '').trim();
   if(!msg) return;
   appendAiMessage('user', msg);
   aiInput.value = '';
 
   try{
-    const apiBase = window.location.origin;
-    const res = await fetch(apiBase + '/api/chat', {
+    const res = await fetch(`${apiBase}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type':'application/json' },
       body: JSON.stringify({
@@ -1743,30 +1748,28 @@ map.on('load', async ()=>{
         schedule: currentSchedule
       })
     });
-    // ...
 
-
-      if(!res.ok){
-        appendAiMessage('ai', '❌ حصل خطأ في الاتصال بالسيرفر.');
-        return;
-      }
-
-      const data = await res.json();
-      appendAiMessage('ai', data.reply || 'ماقدرتش أطلع رد يا نجم.');
-    } catch(err){
-      console.error('AI error:', err);
-      appendAiMessage('ai', '⚠️ حصل Error في الاتصال بالـ AI.');
+    if(!res.ok){
+      appendAiMessage('ai', '❌ حصل خطأ في الاتصال بالسيرفر.');
+      return;
     }
-  }
 
-  if(aiSendBtn && aiInput){
-    aiSendBtn.onclick = sendAiMessage;
-    aiInput.addEventListener('keydown', (e)=>{
-      if(e.key === 'Enter') sendAiMessage();
-    });
+    const data = await res.json();
+    appendAiMessage('ai', data.reply || 'ماقدرتش أطلع رد يا نجم.');
+  } catch(err){
+    console.error('AI error:', err);
+    appendAiMessage('ai', '⚠️ حصل Error في الاتصال بالـ AI.');
   }
+}
 
-  appendAiMessage('ai', 'أهلا بيك في CU Navigate AI 👋 اسألني عن محاضراتك أو قولّي مثلاً: فين HALL161؟ أو ودّيني من HALL161 لـ HALL655.');
+if(aiSendBtn && aiInput){
+  aiSendBtn.onclick = sendAiMessage;
+  aiInput.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter') sendAiMessage();
+  });
+}
+
+appendAiMessage('ai', 'أهلا بيك في CU Navigate AI 👋 اسألني عن محاضراتك أو أي سؤال تاني.');
 
   // ===== User panel toggle =====
   const userPanel = document.getElementById('user-panel');
