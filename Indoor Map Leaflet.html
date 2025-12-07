@@ -1,0 +1,1619 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>CU Navigate — Indoor 3D Map (Premium)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link href="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.css" rel="stylesheet" />
+
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:"Inter",sans-serif;}
+    html,body,#map{width:100%;height:100%;}
+
+    /* TOP BAR */
+    #top-bar{
+      position:absolute;
+      top:20px;
+      left:50%;
+      transform:translateX(-50%);
+      width:60%;
+      height:48px;
+      z-index:2000;
+      background:rgba(255,255,255,0.18);
+      backdrop-filter:blur(12px);
+      padding:8px 18px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      box-shadow:0 4px 18px rgba(0,0,0,0.15);
+      border:1px solid rgba(255,255,255,0.35);
+    }
+
+    #logo{font-size:22px;font-weight:700;color:#0a3d62;white-space:nowrap;}
+    #search-box{
+      flex:1;height:35px;border-radius:10px;border:none;padding:0 15px;
+      background:white;font-size:14px;outline:none;
+    }
+    .top-btn{
+      background:#0a3d62;color:white;padding:6px 14px;border-radius:10px;
+      border:none;font-size:13px;font-weight:600;cursor:pointer;
+      transition:0.2s;
+    }
+    .top-btn:hover{background:#124b7a;}
+
+    /* SEARCH RESULTS DROPDOWN */
+    #search-results{
+      position:absolute;
+      top:70px;
+      left:50%;
+      transform:translateX(-50%);
+      width:50%;
+      max-height:220px;
+      overflow-y:auto;
+      background:white;
+      z-index:2100;
+      border-radius:10px;
+      box-shadow:0 6px 18px rgba(0,0,0,0.2);
+      display:none;
+    }
+    .search-item{
+      padding:8px 12px;
+      font-size:14px;
+      cursor:pointer;
+      border-bottom:1px solid #f1f1f1;
+    }
+    .search-item:hover{
+      background:#f1f5f9;
+    }
+
+    /* SIDE PANEL */
+    #side-panel{
+      position:absolute;top:60px;left:20px;width:300px;
+      background:rgba(255,255,255,0.22);backdrop-filter:blur(15px);
+      padding:20px;border-radius:18px;z-index:2000;
+      box-shadow:0 8px 30px rgba(0,0,0,0.2);
+      border:1px solid rgba(255,255,255,0.35);
+      animation:fadeSlide 0.4s ease;
+    }
+    @keyframes fadeSlide{
+      from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);}
+    }
+    .panel-title{
+      font-size:17px;font-weight:700;color:#0a3d62;margin-bottom:10px;
+    }
+    .panel-subtitle{
+      font-size:12px;color:#636e72;margin-bottom:15px;
+    }
+    .select-box{
+      width:100%;padding:8px 12px;margin-bottom:10px;
+      border-radius:10px;border:none;font-size:14px;background:white;outline:none;
+    }
+    .route-btn{
+      width:100%;padding:10px 0;border-radius:12px;
+      background:linear-gradient(135deg,#008cff,#0052cc);
+      font-size:16px;font-weight:700;color:white;border:none;cursor:pointer;
+      transition:0.2s;
+    }
+    .route-btn:hover{opacity:0.95;}
+    .reset-btn{
+      width:100%;padding:8px 0;margin-top:8px;border:none;border-radius:10px;
+      background:#ee5253;color:white;cursor:pointer;transition:0.2s;
+    }
+    .reset-btn:hover{background:#d63031;}
+
+    #route-info{
+      margin-top:12px;
+      font-size:13px;
+      color:#2d3436;
+      line-height:1.5;
+      min-height:40px;
+    }
+    #directions-list{
+      margin-top:8px;
+      max-height:120px;
+      overflow-y:auto;
+      font-size:12px;
+      color:#2d3436;
+    }
+    .direction-step{
+      margin-bottom:4px;
+    }
+
+    /* FLOORS BAR */
+    #floors-bar{
+      position:absolute;right:20px;top:120px;width:60px;z-index:2000;
+      background:rgba(255,255,255,0.18);backdrop-filter:blur(15px);
+      border-radius:18px;padding:8px 0;text-align:center;
+      box-shadow:0 6px 20px rgba(0,0,0,0.2);
+      border:1px solid rgba(255,255,255,0.35);
+    }
+    .floor-btn{
+      padding:10px 0;width:100%;cursor:pointer;font-weight:600;
+      border-bottom:1px solid rgba(255,255,255,0.4);
+      transition:0.2s;font-size:13px;
+    }
+    .floor-btn:last-child{border-bottom:none;}
+    .floor-btn:hover{background:rgba(255,255,255,0.3);} 
+    .floor-active{background:#0a3d62;color:white;}
+
+    /* MAP CONTROLS */
+    .map-controls{
+      position:absolute;bottom:25px;right:25px;z-index:2000;
+      display:flex;flex-direction:column;gap:10px;
+    }
+    .ctrl-btn{
+      width:45px;height:45px;border-radius:12px;
+      background:rgba(255,255,255,0.3);backdrop-filter:blur(10px);
+      border:1px solid rgba(255,255,255,0.4);
+      display:flex;align-items:center;justify-content:center;
+      font-size:20px;cursor:pointer;transition:0.2s;
+    }
+    .ctrl-btn:hover{background:rgba(255,255,255,0.5);}  
+
+    /* USER / SCHEDULE PANEL */
+    #user-panel{
+      position:absolute;
+      top:435px;
+      left:20px;
+      width:300px;
+      background:rgba(255,255,255,0.22);
+      backdrop-filter:blur(15px);
+      padding:16px;
+      border-radius:18px;
+      z-index:2000;
+      box-shadow:0 8px 30px rgba(0,0,0,0.2);
+      border:1px solid rgba(255,255,255,0.35);
+    }
+
+    #user-panel-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      cursor:pointer;
+      gap:8px;
+    }
+    .user-title{
+      font-size:15px;font-weight:700;color:#0a3d62;margin-bottom:4px;
+    }
+    #user-toggle-arrow{
+      font-size:14px;
+      color:#0a3d62;
+      transition:transform 0.2s;
+    }
+    #user-panel.collapsed #user-toggle-arrow{
+      transform:rotate(-90deg);
+    }
+    #user-panel-body{
+      margin-top:6px;
+    }
+    #user-panel.collapsed #user-panel-body{
+      display:none;
+    }
+
+    .user-input{
+      width:100%;margin-bottom:8px;padding:7px 10px;
+      border-radius:10px;border:none;font-size:13px;background:white;outline:none;
+    }
+    .user-btn{
+      width:100%;padding:8px 0;border-radius:10px;border:none;
+      background:#0a3d62;color:white;font-size:13px;font-weight:600;cursor:pointer;margin-top:2px;
+    }
+    .user-btn:hover{background:#124b7a;}
+    .user-btn-secondary{
+      width:100%;padding:8px 0;margin-top:10px;border-radius:10px;border:none;
+      background:#0984e3;color:white;font-size:13px;font-weight:600;cursor:pointer;
+    }
+    .user-btn-secondary:disabled{opacity:0.5;cursor:not-allowed;}
+    .today-lecture-title{
+      font-size:13px;font-weight:600;margin-top:8px;color:#2d3436;
+    }
+    .today-lecture-meta{
+      font-size:12px;color:#636e72;margin-top:4px;
+    }
+
+    /* ADS PANEL */
+    #ads-panel{
+      position:absolute;left:20px;bottom:20px;width:300px;
+      background:rgba(255,255,255,0.22);backdrop-filter:blur(15px);
+      padding:12px 14px;border-radius:16px;z-index:2000;
+      box-shadow:0 6px 24px rgba(0,0,0,0.2);
+      border:1px solid rgba(255,255,255,0.35);
+    }
+    .ads-title{
+      font-size:14px;font-weight:700;color:#0a3d62;margin-bottom:6px;
+    }
+    #ads-list{max-height:160px;overflow-y:auto;}
+    .ad-card{
+      padding:8px 10px;border-radius:10px;background:white;margin-bottom:6px;cursor:pointer;
+      transition:0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.08);
+    }
+    .ad-card:hover{
+      transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.15);
+    }
+    .ad-title{
+      font-size:13px;font-weight:600;color:#2d3436;margin-bottom:2px;
+    }
+    .ad-text{
+      font-size:12px;color:#636e72;margin-bottom:4px;
+    }
+    .ad-badge{
+      font-size:10px;font-weight:600;color:#e67e22;text-transform:uppercase;
+    }
+
+    /* LOGIN OVERLAY */
+    #login-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.45);
+      backdrop-filter:blur(14px);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:3000;
+    }
+    .login-card{
+      width:360px;
+      max-width:90%;
+      background:rgba(255,255,255,0.96);
+      border-radius:20px;
+      padding:24px 22px;
+      box-shadow:0 10px 35px rgba(0,0,0,0.25);
+      text-align:center;
+    }
+    .login-title{
+      font-size:18px;
+      font-weight:700;
+      color:#0a3d62;
+      margin-bottom:6px;
+    }
+    .login-subtitle{
+      font-size:12px;
+      color:#636e72;
+      margin-bottom:14px;
+    }
+    .login-input{
+      width:100%;
+      margin-bottom:8px;
+      padding:8px 11px;
+      border-radius:10px;
+      border:none;
+      font-size:13px;
+      background:#fdfdfd;
+      outline:none;
+    }
+    .login-btn{
+      width:100%;
+      padding:9px 0;
+      border-radius:12px;
+      border:none;
+      background:linear-gradient(135deg,#008cff,#0052cc);
+      color:#fff;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+      margin-top:4px;
+    }
+    .login-btn:hover{opacity:0.95;}
+
+    /* AI CHAT PANEL */
+    #ai-panel{
+      position:absolute;
+      right:20px;
+      bottom:80px;
+      width:320px;
+      max-height:260px;
+      background:rgba(255,255,255,0.95);
+      border-radius:16px;
+      box-shadow:0 8px 24px rgba(0,0,0,0.25);
+      border:1px solid rgba(15,23,42,0.12);
+      padding:10px 12px;
+      z-index:2500;
+      display:none;
+      flex-direction:column;
+    }
+    .ai-title{
+      font-size:14px;
+      font-weight:700;
+      color:#0f172a;
+      margin-bottom:4px;
+    }
+    .ai-subtitle{
+      font-size:11px;
+      color:#6b7280;
+      margin-bottom:6px;
+    }
+    #ai-messages{
+      flex:1;
+      overflow-y:auto;
+      font-size:12px;
+      padding-right:4px;
+      margin-bottom:6px;
+    }
+    .ai-msg{
+      margin-bottom:4px;
+      line-height:1.4;
+    }
+    .ai-msg-user{
+      text-align:right;
+      color:#111827;
+    }
+    .ai-msg-ai{
+      text-align:left;
+      color:#0f172a;
+    }
+    .ai-input-row{
+      display:flex;
+      gap:6px;
+    }
+    #ai-input{
+      flex:1;
+      border-radius:999px;
+      border:1px solid #e5e7eb;
+      padding:6px 10px;
+      font-size:12px;
+      outline:none;
+    }
+    #ai-input:focus{
+      border-color:#0a3d62;
+    }
+    #ai-send-btn{
+      border:none;
+      border-radius:999px;
+      padding:6px 12px;
+      font-size:12px;
+      font-weight:600;
+      background:#0a3d62;
+      color:#fff;
+      cursor:pointer;
+    }
+    #ai-send-btn:hover{
+      background:#124b7a;
+    }
+
+    /* Floating AI button */
+    .ai-float-btn{
+      position:absolute;
+      right:20px;
+      bottom:25px;
+      width:52px;
+      height:52px;
+      border-radius:50%;
+      border:none;
+      background:#0a3d62;
+      color:#fff;
+      font-size:22px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      box-shadow:0 6px 20px rgba(0,0,0,0.25);
+      z-index:2500;
+    }
+    .ai-float-btn:hover{
+      background:#124b7a;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- TOP BAR -->
+<div id="top-bar">
+  <div id="logo">CU Navigate</div>
+  <input id="search-box" placeholder="Search for a room...">
+  <button id="resetRouteBtn" class="top-btn">Reset</button>
+</div>
+<div id="search-results"></div>
+
+<!-- SIDE PANEL -->
+<div id="side-panel">
+  <div class="panel-title">Navigation</div>
+  <div class="panel-subtitle">Select start and destination rooms, then hit "Find Route"</div>
+  <select id="fromRoomPanel" class="select-box"></select>
+  <select id="toRoomPanel" class="select-box"></select>
+  <button id="panelRouteBtn" class="route-btn">Find Route</button>
+  <button id="panelResetBtn" class="reset-btn">Reset</button>
+  <div id="route-info"></div>
+  <div id="directions-list"></div>
+</div>
+
+<!-- LOGIN OVERLAY -->
+<div id="login-overlay">
+  <div class="login-card">
+    <div class="login-title">Welcome to CU Navigate</div>
+    <div class="login-subtitle">Sign in to see your schedule and live routes</div>
+    <input id="login-name" class="login-input" placeholder="Your name">
+    <select id="login-level" class="login-input">
+      <option value="">Choose academic level</option>
+      <option value="Level1">Level 1</option>
+      <option value="Level2">Level 2</option>
+      <option value="Level3">Level 3</option>
+      <option value="Level4">Level 4</option>
+    </select>
+    <select id="login-group" class="login-input">
+      <option value="">Choose group</option>
+      <option value="G1">Group 1</option>
+      <option value="G2">Group 2</option>
+      <option value="G3">Group 3</option>
+      <option value="G4">Group 4</option>
+    </select>
+    <button id="login-save" class="login-btn">Start navigation</button>
+  </div>
+</div>
+
+<!-- STUDENT / SCHEDULE PANEL -->
+<div id="user-panel">
+  <div id="user-panel-header">
+    <div class="user-title" id="user-title-text">My Day</div>
+    <div id="user-toggle-arrow">▾</div>
+  </div>
+  <div id="user-panel-body">
+    <div id="auth-section">
+      <input id="student-name" class="user-input" placeholder="Your name">
+      <select id="student-level" class="user-input">
+        <option value="">Choose academic level</option>
+        <option value="Level1">Level 1</option>
+        <option value="Level2">Level 2</option>
+        <option value="Level3">Level 3</option>
+        <option value="Level4">Level 4</option>
+      </select>
+      <select id="student-group" class="user-input">
+        <option value="">Choose group</option>
+        <option value="G1">Group 1</option>
+        <option value="G2">Group 2</option>
+        <option value="G3">Group 3</option>
+        <option value="G4">Group 4</option>
+      </select>
+      <button id="save-profile" class="user-btn">Save profile</button>
+    </div>
+    <div id="today-lecture-box">
+      <div id="today-lecture-title" class="today-lecture-title">No profile yet</div>
+      <div id="today-lecture-meta" class="today-lecture-meta"></div>
+    </div>
+    <button id="go-lecture-btn" class="user-btn-secondary" disabled>Go to first lecture</button>
+  </div>
+</div>
+
+<!-- ADS PANEL -->
+<div id="ads-panel">
+  <div class="ads-title">Campus Ads</div>
+  <div id="ads-list"></div>
+</div>
+
+<!-- AI CHAT PANEL -->
+<div id="ai-panel">
+  <div class="ai-title">CU Navigate AI</div>
+  <div class="ai-subtitle">اسأل عن جدولك أو أي سؤال تاني يا نجم ✨</div>
+  <div id="ai-messages"></div>
+  <div class="ai-input-row">
+    <input id="ai-input" placeholder="اسأل عن محاضرة أو أي حاجة...">
+    <button id="ai-send-btn">Send</button>
+  </div>
+</div>
+
+<!-- Floating AI button -->
+<button id="ai-toggle-btn" class="ai-float-btn">💬</button>
+
+<!-- FLOORS BAR -->
+<div id="floors-bar"></div>
+
+<!-- CONTROLS -->
+<div class="map-controls">
+  <div class="ctrl-btn" id="zoomIn">+</div>
+  <div class="ctrl-btn" id="zoomOut">−</div>
+  <div class="ctrl-btn" id="tiltBtn">⤢</div>
+</div>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.js"></script>
+<script>
+// ===== Demo schedule =====
+const scheduleData = {
+  G1: [
+    { day:'Sun', time:'09:00', subject:'Operating Systems', hall:'HALL559' },
+    { day:'Sun', time:'11:00', subject:'Computer Networks', hall:'HALL561' },
+    { day:'Mon', time:'10:00', subject:'Image Processing', hall:'HALL262' },
+    { day:'Tue', time:'09:00', subject:'Embedded Systems', hall:'HALL563' },
+    { day:'Wed', time:'11:00', subject:'Graduation Project', hall:'HALL659' }
+  ],
+  G2: [
+    { day:'Sun', time:'09:00', subject:'Computer Networks', hall:'HALL561' },
+    { day:'Sun', time:'11:00', subject:'Operating Systems', hall:'HALL559' },
+    { day:'Mon', time:'09:00', subject:'Embedded Systems', hall:'HALL563' },
+    { day:'Tue', time:'11:00', subject:'Image Processing', hall:'HALL262' },
+    { day:'Wed', time:'10:00', subject:'Graduation Project', hall:'HALL659' }
+  ],
+  G3: [
+    { day:'Sun', time:'10:00', subject:'Embedded Systems', hall:'HALL563' },
+    { day:'Mon', time:'09:00', subject:'Operating Systems', hall:'HALL559' },
+    { day:'Mon', time:'11:00', subject:'Computer Networks', hall:'HALL561' },
+    { day:'Tue', time:'10:00', subject:'Digital Signal Processing', hall:'HALL262' },
+    { day:'Wed', time:'09:00', subject:'Graduation Project', hall:'HALL659' }
+  ],
+  G4: [
+    { day:'Sun', time:'09:00', subject:'Computer Graphics', hall:'HALL262' },
+    { day:'Sun', time:'11:00', subject:'Operating Systems', hall:'HALL559' },
+    { day:'Mon', time:'10:00', subject:'Computer Networks', hall:'HALL561' },
+    { day:'Tue', time:'09:00', subject:'Embedded Systems', hall:'HALL563' },
+    { day:'Wed', time:'11:00', subject:'Graduation Project', hall:'HALL659' }
+  ]
+};
+
+const dayLabels = {
+  Sun:'الأحد',
+  Mon:'الاثنين',
+  Tue:'الثلاثاء',
+  Wed:'الأربعاء',
+  Thu:'الخميس',
+  Fri:'الجمعة',
+  Sat:'السبت'
+};
+
+const map = new maplibregl.Map({
+  container: 'map',
+  style: 'https://api.maptiler.com/maps/basic/style.json?key=qInXeM6uWFkNwulx00w1',
+  center: [31.20, 30.03],
+  zoom: 18.5,
+  pitch: 60,
+  bearing: -20,
+  antialias: true
+});
+
+async function loadGeoJSON(url){
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('HTTP ERROR ' + res.status + ' for ' + url);
+  return res.json();
+}
+
+function distance(a,b){
+  return Math.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2);
+}
+function findNearestNode(point,nodes){
+  let min=Infinity, nearest=null;
+  for(const n of nodes){
+    const d=distance(point,n);
+    if(d<min){min=d;nearest=n;}
+  }
+  return nearest;
+}
+
+// نخزن level لكل edge في شبكة المسارات
+const edgeLevels = new Map();
+
+function buildGraph(features){
+  const g = new Map();
+  for (const f of features) {
+    const geom = f.geometry;
+    if (!geom) continue;
+
+    const levelId = f.properties?.LEVEL_ID || f.properties?.LEVEL_NAME || f.properties?.LEVEL || f.properties?.level || 'UNKNOWN';
+
+    const lines = (geom.type === 'MultiLineString'
+      ? geom.coordinates
+      : (geom.type === 'LineString' ? [geom.coordinates] : []));
+
+    for (const ln of lines) {
+      for (let i = 0; i < ln.length - 1; i++) {
+        const a = ln[i], b = ln[i+1];
+        const ka = a.join(','), kb = b.join(',');
+
+        if (!g.has(ka)) g.set(ka, []);
+        if (!g.has(kb)) g.set(kb, []);
+
+        const w = distance(a,b);
+
+        const edgeKey1 = ka + '|' + kb;
+        const edgeKey2 = kb + '|' + ka;
+        if (levelId) {
+          edgeLevels.set(edgeKey1, levelId);
+          edgeLevels.set(edgeKey2, levelId);
+        }
+
+        g.get(ka).push({ node: kb, weight: w, level: levelId });
+        g.get(kb).push({ node: ka, weight: w, level: levelId });
+      }
+    }
+  }
+  return g;
+}
+
+function addTransitions(g, features){
+  for (const f of features) {
+    const geom = f.geometry;
+    if (!geom) continue;
+
+    const line = (geom.type === 'LineString'
+      ? geom.coordinates
+      : (geom.type === 'MultiLineString' ? geom.coordinates[0] : null));
+
+    if (!line || line.length < 2) continue;
+
+    const a = line[0], b = line[line.length-1];
+    const ka = a.join(','), kb = b.join(',');
+
+    if (!g.has(ka)) g.set(ka, []);
+    if (!g.has(kb)) g.set(kb, []);
+
+    const w = f.properties && f.properties.LENGTH_3D
+      ? f.properties.LENGTH_3D
+      : distance(a,b);
+
+    // 👈 تعريف مفاتيح الـ edge
+    const edgeKey1 = ka + '|' + kb;
+    const edgeKey2 = kb + '|' + ka;
+
+    // 👈 نقرأ level من خصائص الترانزيشن
+    const fromLevel = f.properties?.LEVEL_NAME_FROM || f.properties?.LEVEL_ID_FROM || 'UNKNOWN';
+    const toLevel   = f.properties?.LEVEL_NAME_TO   || f.properties?.LEVEL_ID_TO   || 'UNKNOWN';
+
+    edgeLevels.set(edgeKey1, fromLevel);
+    edgeLevels.set(edgeKey2, toLevel);
+
+    // 👈 نفس ما هو: edge نوعه TRANSITION في الجراف
+    g.get(ka).push({ node: kb, weight: w, level: 'TRANSITION' });
+    g.get(kb).push({ node: ka, weight: w, level: 'TRANSITION' });
+  }
+}
+
+
+function dijkstra(graph,start,end){
+  const dist={}, prev={}, q=new Set(graph.keys());
+  for(const n of q) dist[n]=Infinity;
+  dist[start]=0;
+  while(q.size>0){
+    const u=[...q].reduce((a,b)=>dist[a]<dist[b]?a:b);
+    q.delete(u);
+    if(u===end) break;
+    const neighbors=graph.get(u) || [];
+    for(const e of neighbors){
+      const alt=dist[u]+e.weight;
+      if(alt<dist[e.node]){
+        dist[e.node]=alt;
+        prev[e.node]=u;
+      }
+    }
+  }
+  if(dist[end]===Infinity) return [];
+  const path=[]; let u=end;
+  while(prev[u]){
+    path.unshift(u.split(',').map(Number));
+    u=prev[u];
+  }
+  path.unshift(start.split(',').map(Number));
+  return path;
+}
+
+// profile / schedule / ads
+let studentProfile = null;
+let currentSchedule = [];
+let firstLecture = null;
+let entranceRoomId = null;
+let adsData = [];
+
+map.on('load', async ()=>{
+
+  let detailsData, pathwaysData, transitionsData, unitsData, levelsData;
+  try {
+    [
+      detailsData,
+      pathwaysData,
+      transitionsData,
+      unitsData,
+      levelsData
+    ] = await Promise.all([
+      loadGeoJSON('Indoor_Detail.geojson'),
+      loadGeoJSON('Indoor_Pathways.geojson'),
+      loadGeoJSON('Indoor_Transitions.geojson'),
+      loadGeoJSON('Indoor_Units.geojson'),
+      loadGeoJSON('Indoor_Levels.geojson')
+    ]);
+  } catch (err) {
+    console.error('Error loading indoor data:', err);
+    alert('❌ في مشكلة في تحميل ملفات الـ GeoJSON. اتأكد من المسارات والأسماء.');
+    return;
+  }
+
+  const globalGraph = buildGraph(pathwaysData.features);
+  addTransitions(globalGraph, transitionsData.features);
+
+  const levels = [...new Set(detailsData.features.map(f=>f.properties.LEVEL_ID))];
+  const floorsBar = document.getElementById('floors-bar');
+  let currentLevel = levels[0];
+
+  const nodesByLevel = {};
+  levels.forEach(lvl=>{
+    const lvlPW=pathwaysData.features.filter(f=>f.properties.LEVEL_ID===lvl);
+    const g=buildGraph(lvlPW);
+    nodesByLevel[lvl] = [...g.keys()].map(s=>s.split(',').map(Number));
+  });
+
+  function getSegmentLevel(u, v) {
+    const key1 = u.join(',') + '|' + v.join(',');
+    const key2 = v.join(',') + '|' + u.join(',');
+
+    if (edgeLevels.has(key1)) return edgeLevels.get(key1);
+    if (edgeLevels.has(key2)) return edgeLevels.get(key2);
+    return null;
+  }
+
+  const fromPanel = document.getElementById('fromRoomPanel');
+  const toPanel   = document.getElementById('toRoomPanel');
+  const searchBox = document.getElementById('search-box');
+  const searchResults = document.getElementById('search-results');
+  const routeInfo = document.getElementById('route-info');
+  const directionsList = document.getElementById('directions-list');
+  const rooms = [];
+
+  function polygonCenter(coords){
+    const ring=coords[0];
+    let sx=0, sy=0;
+    for(const p of ring){sx+=p[0]; sy+=p[1];}
+    const n=ring.length || 1;
+    return [sx/n, sy/n];
+  }
+
+  // Rooms
+  unitsData.features.forEach((f,i)=>{
+    const props=f.properties || {};
+    let rawName = props.USE_TYPE || props.NAME || props.NAME_LONG || `Unit ${i}`;
+    const name = String(rawName).trim();
+    const lvl=props.LEVEL_ID;
+    const geom=f.geometry;
+    if(!geom || !lvl) return;
+    let poly=null;
+    if(geom.type==='Polygon') poly=geom.coordinates;
+    else if(geom.type==='MultiPolygon') poly=geom.coordinates[0];
+    if(!poly) return;
+    const center=polygonCenter(poly);
+    const room={id:i, name, level:lvl, center};
+    rooms.push(room);
+    const addOpt=(sel)=>{
+      const o=document.createElement('option');
+      o.value=i; o.text = `${name} (${lvl})`;
+      sel.appendChild(o);
+    };
+    addOpt(fromPanel); addOpt(toPanel);
+  });
+
+  function markFloor(lvl){
+    [...floorsBar.children].forEach(b=>{
+      b.classList.toggle('floor-active', b.innerText===lvl);
+    });
+  }
+
+  function bringRouteToFront(){
+    ['route-transitions', 'route', 'route-casing'].forEach(id=>{
+      if(map.getLayer(id)) map.moveLayer(id);
+    });
+  }
+
+  function updateRouteStyleForCurrentLevel(){
+    if (map.getLayer('route-casing')) {
+      map.setPaintProperty('route-casing', 'line-color', [
+        'case',
+        ['==', ['get', 'level'], currentLevel], '#cde8ff',
+        '#e5e7eb'
+      ]);
+    }
+    if (map.getLayer('route')) {
+      map.setPaintProperty('route', 'line-color', [
+        'case',
+        ['==', ['get', 'level'], currentLevel], '#007aff',
+        '#b0b4bd'
+      ]);
+    }
+  }
+
+  function drawLevel(lvl){
+    const sources = ['indoor-level','indoor-details','indoor-pathways','indoor-transitions','indoor-units'];
+    const layers  = ['level-bg','walls','walls-flat','pathways','transitions','units','labels-rooms'];
+
+    layers.forEach(id=>map.getLayer(id)&&map.removeLayer(id));
+    sources.forEach(id=>map.getSource(id)&&map.removeSource(id));
+
+    const levelFeatures = levelsData.features.filter(f=>f.properties.LEVEL_ID===lvl);
+    if(levelFeatures.length){
+      map.addSource('indoor-level',{
+
+        type:'geojson',
+        data:{type:'FeatureCollection',features:levelFeatures}
+      });
+      map.addLayer({
+        id:'level-bg',
+        type:'fill',
+        source:'indoor-level',
+        paint:{
+          'fill-color':'#FEFEFF',
+          'fill-opacity':0.9
+        }
+      });
+    }
+
+    const floorDetails = detailsData.features.filter(f=>f.properties.LEVEL_ID===lvl);
+    const polys = floorDetails.map(f=>{
+      if(f.geometry.type==='MultiLineString'){
+        const c=f.geometry.coordinates[0];
+        const closed=(c.length>2?[...c,c[0]]:c);
+        f.geometry={type:'Polygon',coordinates:[closed]};
+      }
+      return f;
+    });
+
+    map.addSource('indoor-details',{
+      type:'geojson',
+      data:{type:'FeatureCollection',features:polys}
+    });
+
+    map.addLayer({
+      id: 'walls',
+      type: 'fill-extrusion',
+      source: 'indoor-details',
+      filter: [
+        'match',
+        ['get','USE_TYPE'],
+        ['A-Wall-INTR','A-Wall-EXTR','A-Glass-WALL','A-Window'],
+        true,
+        false
+      ],
+      paint: {
+        'fill-extrusion-color': '#f3f4f6',
+        'fill-extrusion-height': [
+          'case',
+          ['==',['get','USE_TYPE'],'A-Wall-EXTR'], 3.0,
+          ['==',['get','USE_TYPE'],'A-Wall-INTR'], 2.8,
+          ['==',['get','USE_TYPE'],'A-Glass-WALL'], 2.8,
+          ['==',['get','USE_TYPE'],'A-Window'], 2.8,
+          3.0
+        ],
+        'fill-extrusion-base': 0,
+        'fill-extrusion-opacity': 1
+      }
+    });
+
+    map.addLayer({
+      id:'walls-flat',
+      type:'fill',
+      source:'indoor-details',
+      filter:['!', ['match',['get','USE_TYPE'],true,false]],
+      paint:{
+        'fill-color':'#f9f8f4',
+        'fill-opacity':0
+      }
+    });
+
+    const floorPw = pathwaysData.features.filter(f=>f.properties.LEVEL_ID===lvl);
+    map.addSource('indoor-pathways',{
+      type:'geojson',
+      data:{type:'FeatureCollection',features:floorPw}
+    });
+
+    const floorTr = transitionsData.features.filter(
+      f=>f.properties.LEVEL_NAME_FROM===lvl || f.properties.LEVEL_NAME_TO===lvl
+    );
+    map.addSource('indoor-transitions',{
+      type:'geojson',
+      data:{type:'FeatureCollection',features:floorTr}
+    });
+    map.addLayer({
+      id:'transitions',
+      type:'circle',
+      source:'indoor-transitions',
+      paint:{
+        'circle-radius':4,
+        'circle-color':'#ff5722'
+      }
+    });
+
+    const floorUnits = unitsData.features
+      .filter(f=>f.properties.LEVEL_ID===lvl)
+      .map(f=>{
+        const clone = JSON.parse(JSON.stringify(f));
+        if(clone.properties && typeof clone.properties.USE_TYPE === 'string'){
+          clone.properties.USE_TYPE = clone.properties.USE_TYPE.trim();
+        }
+        return clone;
+      });
+
+    map.addSource('indoor-units',{
+      type:'geojson',
+      data:{type:'FeatureCollection',features:floorUnits}
+    });
+
+    map.addLayer({
+      id:'units',
+      type:'line',
+      source:'indoor-units',
+      paint:{
+        'line-color':'#d0d4dd',
+        'line-width':0.8
+      }
+    });
+
+    map.addLayer({
+      id:'labels-rooms',
+      type:'symbol',
+      source:'indoor-units',
+      filter:[
+        'all',
+        ['!=',['get','USE_TYPE'],'A-Wall-INTR'],
+        ['!=',['get','USE_TYPE'],'A-Wall-EXTR']
+      ],
+      layout:{
+        'text-field':[
+          'coalesce',
+          ['get','USE_TYPE']
+        ],
+        'text-size':12,
+        'text-offset':[0,0.4],
+        'text-anchor':'top'
+      },
+      paint:{
+        'text-color':'#333333',
+        'text-halo-color':'#ffffff',
+        'text-halo-width':1.5
+      }
+    });
+
+    currentLevel=lvl;
+    updateRouteStyleForCurrentLevel();
+    bringRouteToFront();
+  }
+
+  // Floor buttons
+  levels.forEach(lvl=>{
+  const btn=document.createElement('div');
+  btn.className='floor-btn';
+  btn.innerText=lvl;
+  btn.onclick=()=>{
+    drawLevel(lvl);
+    markFloor(lvl);
+    currentLevel = lvl;              // 👈 حدّث الدور الحالي
+    updateRouteStyleForCurrentLevel(); // 👈 عدّل لون المسار
+  };
+  floorsBar.appendChild(btn);
+});
+
+  markFloor(currentLevel);
+  drawLevel(currentLevel);
+
+  // ===== Route drawing / animation =====
+ function clearRoute() {
+  ['route', 'route-casing', 'route-transitions'].forEach(id => {
+    if (map.getLayer(id)) map.removeLayer(id);
+  });
+
+  ['route-lines', 'route-transitions-src'].forEach(id => {
+    if (map.getSource(id)) map.removeSource(id);
+  });
+
+  routeInfo.textContent = '';
+  directionsList.innerHTML = '';
+}
+
+
+
+function drawRoute(path) {
+  clearRoute();
+  if (!path || path.length < 2) return;
+
+  const lineFeatures = [];
+  const transitionPoints = [];
+
+  for (let i = 0; i < path.length - 1; i++) {
+    const u = path[i];
+    const v = path[i + 1];
+
+    const segLevel = getSegmentLevel(u, v) || 'UNKNOWN';
+
+    // سيجمنت الخط (flat 2D)
+    lineFeatures.push({
+      type: 'Feature',
+      properties: {
+        level: segLevel
+      },
+      geometry: {
+        type: 'LineString',
+        coordinates: [
+          [u[0], u[1]],
+          [v[0], v[1]]
+        ]
+      }
+    });
+
+    // transition point لما نغيّر الدور
+    if (i > 0) {
+      const prevLevel = getSegmentLevel(path[i - 1], u) || 'UNKNOWN';
+      if (prevLevel !== segLevel &&
+          prevLevel !== 'TRANSITION' &&
+          segLevel !== 'TRANSITION') {
+        transitionPoints.push({
+          type: 'Feature',
+          properties: {
+            fromLevel: prevLevel,
+            toLevel: segLevel
+          },
+          geometry: {
+            type: 'Point',
+            coordinates: [u[0], u[1]]
+          }
+        });
+      }
+    }
+  }
+
+  const routeGeoJSON = {
+    type: 'FeatureCollection',
+    features: lineFeatures
+  };
+
+  const transitionsGeoJSON = {
+    type: 'FeatureCollection',
+    features: transitionPoints
+  };
+
+  // إذا المسار كله على دور واحد، نبدّل العرض للدور ده علشان المسار يبان
+  try {
+    const routeLevels = [...new Set(lineFeatures.map(f => f.properties.level).filter(l => l && l !== 'UNKNOWN' && l !== 'TRANSITION'))];
+    if (routeLevels.length === 1) {
+      const routeLevel = routeLevels[0];
+      if (routeLevel && routeLevel !== currentLevel) {
+        drawLevel(routeLevel);
+        markFloor(routeLevel);
+        currentLevel = routeLevel;
+        updateRouteStyleForCurrentLevel();
+      }
+    }
+  } catch (e) {
+    console.warn('Could not auto-switch level for route:', e);
+  }
+
+  // مصدر الخطوط
+  map.addSource('route-lines', {
+    type: 'geojson',
+    data: routeGeoJSON
+  });
+
+  // مصدر نقاط الترانزيشن
+  map.addSource('route-transitions-src', {
+    type: 'geojson',
+    data: transitionsGeoJSON
+  });
+
+  // casing عريض
+  map.addLayer({
+    id: 'route-casing',
+    type: 'line',
+    source: 'route-lines',
+    paint: {
+      'line-color': [
+        'case',
+        ['==', ['get', 'level'], currentLevel], '#cde8ff',
+        '#e5e7eb'
+      ],
+      'line-width': 10,
+      'line-opacity': 0.95,
+      'line-cap': 'round',
+      'line-join': 'round'
+    }
+  });
+
+  // الخط الأساسي
+  map.addLayer({
+    id: 'route',
+    type: 'line',
+    source: 'route-lines',
+    paint: {
+      'line-color': [
+        'case',
+        ['==', ['get', 'level'], currentLevel], '#007aff', // الدور الحالي
+        '#b0b4bd'                                          // باقي الأدوار
+      ],
+      'line-width': 6,
+      'line-opacity': 1,
+      'line-cap': 'round',
+      'line-join': 'round'
+    }
+  });
+
+  // نقاط الترانزيشن (سلم / مصعد)
+  map.addLayer({
+    id: 'route-transitions',
+    type: 'circle',
+    source: 'route-transitions-src',
+    paint: {
+      'circle-radius': 5,
+      'circle-color': '#ff9800',       // برتقالي
+      'circle-stroke-color': '#ffffff',
+      'circle-stroke-width': 1.5
+    }
+  });
+
+  // نحدّث الألوان حسب الدور الحالي ونخلي المسار فوق
+  updateRouteStyleForCurrentLevel();
+  bringRouteToFront();
+
+  // Diagnostic: log feature count and fit map to route bounds so it's visible
+  try {
+    console.log('drawRoute: features=', routeGeoJSON.features.length);
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    routeGeoJSON.features.forEach(f => {
+      if (f.geometry && f.geometry.type === 'LineString') {
+        f.geometry.coordinates.forEach(c => {
+          const x = c[0], y = c[1];
+          if (x < minX) minX = x;
+          if (y < minY) minY = y;
+          if (x > maxX) maxX = x;
+          if (y > maxY) maxY = y;
+        });
+      }
+    });
+    if (isFinite(minX) && isFinite(minY) && isFinite(maxX) && isFinite(maxY)) {
+      const bounds = [[minX, minY], [maxX, maxY]];
+      console.log('drawRoute: bounds=', bounds);
+      map.fitBounds(bounds, { padding: 80, duration: 1000 });
+    }
+  } catch (err) {
+    console.warn('drawRoute: could not compute/focus bounds', err);
+  }
+}
+
+
+
+  function updateRouteInfo(path) {
+    if (!path || path.length < 2) {
+      routeInfo.textContent = '';
+      directionsList.innerHTML = '';
+      return;
+    }
+    let total = 0;
+    for (let i = 0; i < path.length - 1; i++) {
+      total += distance(path[i], path[i+1]);
+    }
+    const metersTotal = total * 111139;
+    routeInfo.innerHTML =
+      `Distance: <b>${metersTotal.toFixed(1)} m</b>`;
+    directionsList.innerHTML = '';
+  }
+
+  function routeRooms(fromId, toId){
+    const fr=rooms[fromId], to=rooms[toId];
+    if(!fr || !to){
+      alert('اختيار غرف غير صالح');
+      return;
+    }
+
+    if (fromId === toId) {
+      drawLevel(fr.level);
+      markFloor(fr.level);
+      map.easeTo({ center: fr.center, zoom: 19 });
+      clearRoute();
+      return;
+    }
+function updateRouteStyleForCurrentLevel() {
+  // لو مفيش layers لسه، نخرج بس
+  if (!map.getLayer('route') || !map.getLayer('route-casing')) return;
+
+  map.setPaintProperty('route-casing', 'line-color', [
+    'case',
+    ['==', ['get', 'level'], currentLevel], '#cde8ff',
+    '#e5e7eb'
+  ]);
+
+  map.setPaintProperty('route', 'line-color', [
+    'case',
+    ['==', ['get', 'level'], currentLevel], '#007aff',
+    '#b0b4bd'
+  ]);
+}
+
+    const sn=findNearestNode(fr.center, nodesByLevel[fr.level] || []);
+    const en=findNearestNode(to.center, nodesByLevel[to.level] || []);
+    if(!sn || !en){
+      alert('لم يتم العثور على عقد قريبة من الغرف');
+      return;
+    }
+    const s=sn.join(','), e=en.join(',');
+    const path = dijkstra(globalGraph,s,e);
+    if(path.length===0){
+      alert('❌ لا يوجد مسار بين الغرفتين');
+      return;
+    }
+    drawRoute(path);
+    updateRouteInfo(path);
+  }
+
+  document.getElementById('panelRouteBtn').onclick=()=>{
+    const f=fromPanel.value, t=toPanel.value;
+    if(!f || !t){
+      alert('اختر غرفتي البداية والنهاية');
+      return;
+    }
+    routeRooms(f,t);
+  };
+
+  document.getElementById('resetRouteBtn').onclick = clearRoute;
+  document.getElementById('panelResetBtn').onclick = clearRoute;
+
+  document.getElementById('zoomIn').onclick=()=>map.zoomTo(map.getZoom()+0.5);
+  document.getElementById('zoomOut').onclick=()=>map.zoomTo(map.getZoom()-0.5);
+  document.getElementById('tiltBtn').onclick=()=>{
+    map.easeTo({pitch: map.getPitch()>10 ? 0 : 60});
+  };
+
+  // ========== Search ==========
+  function selectRoomFromSearch(room){
+    if(!fromPanel.value){
+      fromPanel.value = room.id;
+    } else if(!toPanel.value){
+      toPanel.value = room.id;
+    } else {
+      fromPanel.value = room.id;
+      toPanel.value = '';
+    }
+    drawLevel(room.level);
+    markFloor(room.level);
+    map.easeTo({center: room.center, zoom: 19});
+  }
+
+  searchBox.addEventListener('input', ()=>{
+    const q = searchBox.value.trim().toLowerCase();
+    if(q.length < 2){
+      searchResults.style.display='none';
+      searchResults.innerHTML='';
+      return;
+    }
+    const matches = rooms
+      .filter(r=>r.name.toLowerCase().includes(q))
+      .slice(0,10);
+
+    if(matches.length===0){
+      searchResults.style.display='none';
+      searchResults.innerHTML='';
+      return;
+    }
+
+    searchResults.innerHTML='';
+    matches.forEach(r=>{
+      const div=document.createElement('div');
+      div.className='search-item';
+      div.textContent = `${r.name} (${r.level})`;
+      div.onclick=()=>{
+        selectRoomFromSearch(r);
+        searchResults.style.display='none';
+      };
+      searchResults.appendChild(div);
+    });
+    searchResults.style.display='block';
+  });
+
+  document.addEventListener('click',(e)=>{
+    if(!e.target.closest('#top-bar') && !e.target.closest('#search-results')){
+      searchResults.style.display='none';
+    }
+  });
+
+  // ========== Profile + Ads + Login ==========
+  const studentNameInput = document.getElementById('student-name');
+  const studentLevelSelect = document.getElementById('student-level');
+  const studentGroupSelect = document.getElementById('student-group');
+  const saveProfileBtn = document.getElementById('save-profile');
+  const todayLectureTitle = document.getElementById('today-lecture-title');
+  const todayLectureMeta = document.getElementById('today-lecture-meta');
+  const goLectureBtn = document.getElementById('go-lecture-btn');
+  const adsList = document.getElementById('ads-list');
+
+  const loginOverlay = document.getElementById('login-overlay');
+  const loginNameInput = document.getElementById('login-name');
+  const loginLevelSelect = document.getElementById('login-level');
+  const loginGroupSelect = document.getElementById('login-group');
+  const loginSaveBtn = document.getElementById('login-save');
+
+  function hideLoginOverlay(){ if(loginOverlay) loginOverlay.style.display='none'; }
+  function showLoginOverlay(){ if(loginOverlay) loginOverlay.style.display='flex'; }
+
+  if(rooms.length>0){
+    const sortedForEntrance = [...rooms].sort((a,b)=> String(a.level).localeCompare(String(b.level)));
+    entranceRoomId = sortedForEntrance[0].id;
+  }
+
+  function buildScheduleForProfile(profile){
+    if(!profile || !profile.group) return [];
+    const groupKey = profile.group in scheduleData ? profile.group : 'G1';
+    const base = scheduleData[groupKey] || [];
+    const schedule = [];
+    base.forEach(entry=>{
+      const hallCode = entry.hall;
+      const room = rooms.find(r=>{
+        const normalized = r.name.replace(/\s+/g,'').toUpperCase();
+        return normalized === hallCode.toUpperCase();
+      });
+      if(!room) return;
+      schedule.push({
+        title: entry.subject + ' ['+groupKey+']',
+        time: entry.time,
+        dayCode: entry.day,
+        dayLabel: dayLabels[entry.day] || entry.day,
+        roomIndex: room.id,
+        roomName: room.name,
+        level: room.level
+      });
+    });
+    return schedule;
+  }
+
+  function applyLectureToUI(){
+    if(!firstLecture){
+      todayLectureTitle.textContent = 'لا توجد محاضرة مجدولة الآن (ديمو)';
+      todayLectureMeta.textContent = '';
+      goLectureBtn.disabled = true;
+      return;
+    }
+    todayLectureTitle.textContent = 'Next: ' + firstLecture.title;
+    todayLectureMeta.textContent =
+      `${firstLecture.dayLabel} • ${firstLecture.time} • ${firstLecture.roomName} (${firstLecture.level})`;
+    goLectureBtn.disabled = false;
+  }
+
+  function routeToFirstLecture(){
+    if(!firstLecture) return;
+    const fromId = (entranceRoomId != null) ? entranceRoomId : firstLecture.roomIndex;
+    const toId = firstLecture.roomIndex;
+    fromPanel.value = fromId;
+    toPanel.value = toId;
+    routeRooms(fromId,toId);
+  }
+
+  function setupScheduleAndLecture(){
+    if(!studentProfile || !studentProfile.group){
+      firstLecture = null;
+      applyLectureToUI();
+      return;
+    }
+    currentSchedule = buildScheduleForProfile(studentProfile);
+    if(currentSchedule.length === 0){
+      firstLecture = null;
+      applyLectureToUI();
+      return;
+    }
+    const dayCodes = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const todayCode = dayCodes[new Date().getDay()];
+    const todayLectures = currentSchedule.filter(l=>l.dayCode === todayCode);
+    firstLecture = todayLectures[0] || currentSchedule[0];
+    applyLectureToUI();
+  }
+
+  if(saveProfileBtn){
+    saveProfileBtn.onclick = ()=>{
+      const name = (studentNameInput.value || '').trim() || 'Student';
+      const levelVal = studentLevelSelect.value;
+      const groupVal = studentGroupSelect.value || 'G1';
+      if(!levelVal){
+        alert('اختر المستوى الدراسي');
+        return;
+      }
+      studentProfile = {name, level: levelVal, group: groupVal};
+      try{ localStorage.setItem('cuProfile', JSON.stringify(studentProfile)); }catch(e){}
+      if(loginNameInput) loginNameInput.value = name;
+      if(loginLevelSelect) loginLevelSelect.value = levelVal;
+      if(loginGroupSelect) loginGroupSelect.value = groupVal;
+      setupScheduleAndLecture();
+      hideLoginOverlay();
+    };
+  }
+
+  if (loginSaveBtn) {
+    loginSaveBtn.onclick = () => {
+      const name = (loginNameInput.value || '').trim() || 'Student';
+      const levelVal = loginLevelSelect.value;
+      const groupVal = loginGroupSelect.value || 'G1';
+
+      if (!levelVal) {
+        alert('اختر المستوى الدراسي');
+        return;
+      }
+
+      studentProfile = { name, level: levelVal, group: groupVal };
+      try {
+        localStorage.setItem('cuProfile', JSON.stringify(studentProfile));
+      } catch (e) {}
+
+      if (studentNameInput) studentNameInput.value = name;
+      if (studentLevelSelect) studentLevelSelect.value = levelVal;
+      if (studentGroupSelect) studentGroupSelect.value = groupVal;
+
+      setupScheduleAndLecture();
+      hideLoginOverlay();
+
+      if (firstLecture) {
+        routeToFirstLecture();
+      } else {
+        map.easeTo({
+          center: [31.20, 30.03],
+          zoom: 18.7,
+          pitch: 60,
+          bearing: -20,
+          duration: 1000
+        });
+      }
+    };
+  }
+
+  if(goLectureBtn){ goLectureBtn.onclick = routeToFirstLecture; }
+
+  function loadProfileFromStorage(){
+    try{
+      const raw = localStorage.getItem('cuProfile');
+      if(!raw) { showLoginOverlay(); return; }
+      const prof = JSON.parse(raw);
+      if(!prof || !prof.level) { showLoginOverlay(); return; }
+      studentProfile = prof;
+      if(studentNameInput) studentNameInput.value = prof.name || '';
+      if(studentLevelSelect) studentLevelSelect.value = prof.level;
+      if(studentGroupSelect && prof.group) studentGroupSelect.value = prof.group;
+      if(loginNameInput) loginNameInput.value = prof.name || '';
+      if(loginLevelSelect) loginLevelSelect.value = prof.level;
+      if(loginGroupSelect && prof.group) loginGroupSelect.value = prof.group;
+      setupScheduleAndLecture();
+      hideLoginOverlay();
+    }catch(e){ showLoginOverlay(); }
+  }
+
+  function setupAds(){
+    if(!adsList) return;
+    adsData = [];
+    if(rooms.length === 0) return;
+
+    const spot1 = rooms.find(r=>/CAF|CAFE|FOOD/i.test(r.name)) || rooms[0];
+    const spot2 = rooms.find(r=>/LAB/i.test(r.name)) || rooms[1] || rooms[0];
+    const spot3 = rooms[2] || rooms[0];
+
+    if(spot1) adsData.push({
+      id:'ad1',
+      title:'EGFood • Campus Lunch',
+      text:'خصم خاص لطلبة المستوى الرابع بالقرب من ' + spot1.name,
+      roomIndex: spot1.id
+    });
+    if(spot2) adsData.push({
+      id:'ad2',
+      title:'New Lab Opening',
+      text:'معمل جديد جاهز للتجارب بجوار ' + spot2.name,
+      roomIndex: spot2.id
+    });
+    if(spot3) adsData.push({
+      id:'ad3',
+      title:'Student Event',
+      text:'Event طلابي قريب من ' + spot3.name,
+      roomIndex: spot3.id
+    });
+
+    adsList.innerHTML = '';
+    adsData.forEach(ad=>{
+      const card = document.createElement('div');
+      card.className = 'ad-card';
+      card.innerHTML =
+        '<div class="ad-title">'+ad.title+'</div>' +
+        '<div class="ad-text">'+ad.text+'</div>' +
+        '<div class="ad-badge">Sponsored</div>';
+      card.onclick = ()=>focusAd(ad);
+      adsList.appendChild(card);
+    });
+  }
+
+  function focusAd(ad){
+    const room = rooms.find(r=>r.id === ad.roomIndex);
+    if(!room) return;
+    drawLevel(room.level);
+    markFloor(room.level);
+    map.easeTo({center: room.center, zoom: 19, duration: 1200});
+  }
+
+  // ===== AI CHAT HOOKUP =====
+  const aiMessages = document.getElementById('ai-messages');
+  const aiInput    = document.getElementById('ai-input');
+  const aiSendBtn  = document.getElementById('ai-send-btn');
+  const aiPanel    = document.getElementById('ai-panel');
+  const aiToggleBtn= document.getElementById('ai-toggle-btn');
+
+  let aiPanelOpen = false;
+
+  function openAiPanel(){
+    if(aiPanel){
+      aiPanel.style.display = 'flex';
+      aiPanelOpen = true;
+    }
+  }
+  function closeAiPanel(){
+    if(aiPanel){
+      aiPanel.style.display = 'none';
+      aiPanelOpen = false;
+    }
+  }
+
+  if(aiToggleBtn){
+    aiToggleBtn.onclick = ()=>{
+      if(aiPanelOpen) closeAiPanel();
+      else openAiPanel();
+    };
+  }
+
+  function appendAiMessage(sender, text){
+    if(!aiMessages) return;
+    const div = document.createElement('div');
+    div.className = 'ai-msg ' + (sender === 'user' ? 'ai-msg-user' : 'ai-msg-ai');
+    div.textContent = text;
+    aiMessages.appendChild(div);
+    aiMessages.scrollTop = aiMessages.scrollHeight;
+  }
+
+  async function sendAiMessage(){
+    const msg = (aiInput.value || '').trim();
+    if(!msg) return;
+    appendAiMessage('user', msg);
+    aiInput.value = '';
+
+    try{
+      const res = await fetch('http://localhost:3000/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify({
+          message: msg,
+          profile: studentProfile,
+          schedule: currentSchedule
+        })
+      });
+
+      if(!res.ok){
+        appendAiMessage('ai', '❌ حصل خطأ في الاتصال بالسيرفر.');
+        return;
+      }
+
+      const data = await res.json();
+      appendAiMessage('ai', data.reply || 'ماقدرتش أطلع رد يا نجم.');
+    } catch(err){
+      console.error('AI error:', err);
+      appendAiMessage('ai', '⚠️ حصل Error في الاتصال بالـ AI.');
+    }
+  }
+
+  if(aiSendBtn && aiInput){
+    aiSendBtn.onclick = sendAiMessage;
+    aiInput.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter') sendAiMessage();
+    });
+  }
+
+  appendAiMessage('ai', 'أهلا بيك في CU Navigate AI 👋 اسألني عن محاضراتك أو أي سؤال تاني.');
+
+  // ===== User panel toggle =====
+  const userPanel = document.getElementById('user-panel');
+  const userHeader = document.getElementById('user-panel-header');
+  const userTitleText = document.getElementById('user-title-text');
+  const userPanelBody = document.getElementById('user-panel-body');
+  let userPanelCollapsed = false;
+
+  if(userHeader){
+    userHeader.onclick = ()=>{
+      userPanelCollapsed = !userPanelCollapsed;
+      if(userPanelCollapsed){
+        userPanel.classList.add('collapsed');
+        if(userPanelBody) userPanelBody.style.display = 'none';
+        if(userTitleText) userTitleText.textContent = 'MY DAYS';
+      }else{
+        userPanel.classList.remove('collapsed');
+        if(userPanelBody) userPanelBody.style.display = 'block';
+        if(userTitleText) userTitleText.textContent = 'My Day';
+      }
+    };
+  }
+
+  // init
+  loadProfileFromStorage();
+  setupAds();
+});
+</script>
+
+</body>
+</html>

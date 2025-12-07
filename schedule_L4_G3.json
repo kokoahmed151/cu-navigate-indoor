@@ -1,0 +1,64 @@
+{
+  "level": 4,
+  "groupId": "G3",
+  "week": {
+    "Sunday": [
+      {
+        "courseCode": "CS402",
+        "courseName": "Computer Networks 2",
+        "hall": "HALL262",
+        "start": "09:00",
+        "end": "11:00",
+        "teacher": "Dr. Hany Samir"
+      }
+    ],
+    "Monday": [
+      {
+        "courseCode": "CS401",
+        "courseName": "Operating Systems 2",
+        "hall": "HALL563",
+        "start": "11:00",
+        "end": "13:00",
+        "teacher": "Dr. Ahmed Ali"
+      }
+    ],
+    "Tuesday": [
+      {
+        "courseCode": "CS403",
+        "courseName": "Artificial Intelligence",
+        "hall": "HALL559",
+        "start": "10:00",
+        "end": "12:00",
+        "teacher": "Dr. Karim Nabil"
+      },
+      {
+        "courseCode": "CS404",
+        "courseName": "Software Engineering 2",
+        "hall": "HALL561",
+        "start": "13:00",
+        "end": "15:00",
+        "teacher": "Dr. Mona Hassan"
+      }
+    ],
+    "Wednesday": [
+      {
+        "courseCode": "CS405",
+        "courseName": "Database Systems 2",
+        "hall": "HALL659",
+        "start": "12:00",
+        "end": "14:00",
+        "teacher": "Dr. Sara Youssef"
+      }
+    ],
+    "Thursday": [
+      {
+        "courseCode": "CS407",
+        "courseName": "Computer Security",
+        "hall": "HALL262",
+        "start": "09:00",
+        "end": "11:00",
+        "teacher": "Dr. Yasser Fathy"
+      }
+    ]
+  }
+}

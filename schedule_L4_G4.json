@@ -1,0 +1,64 @@
+{
+  "level": 4,
+  "groupId": "G4",
+  "week": {
+    "Sunday": [
+      {
+        "courseCode": "CS402",
+        "courseName": "Computer Networks 2",
+        "hall": "HALL563",
+        "start": "11:00",
+        "end": "13:00",
+        "teacher": "Prof. Nabil Fouad"
+      }
+    ],
+    "Monday": [
+      {
+        "courseCode": "CS406",
+        "courseName": "Distributed Systems",
+        "hall": "HALL559",
+        "start": "09:00",
+        "end": "11:00",
+        "teacher": "Dr. Ali Mahmoud"
+      }
+    ],
+    "Tuesday": [
+      {
+        "courseCode": "CS401",
+        "courseName": "Operating Systems 2",
+        "hall": "HALL659",
+        "start": "12:00",
+        "end": "14:00",
+        "teacher": "Dr. Ahmed Ali"
+      }
+    ],
+    "Wednesday": [
+      {
+        "courseCode": "CS403",
+        "courseName": "Artificial Intelligence",
+        "hall": "HALL561",
+        "start": "10:00",
+        "end": "12:00",
+        "teacher": "Dr. Karim Nabil"
+      },
+      {
+        "courseCode": "CS405",
+        "courseName": "Database Systems 2",
+        "hall": "HALL262",
+        "start": "13:00",
+        "end": "15:00",
+        "teacher": "Dr. Sara Youssef"
+      }
+    ],
+    "Thursday": [
+      {
+        "courseCode": "CS408",
+        "courseName": "Graduation Project Seminar",
+        "hall": "HALL563",
+        "start": "11:00",
+        "end": "13:00",
+        "teacher": "Dr. Ahmed Ali"
+      }
+    ]
+  }
+}

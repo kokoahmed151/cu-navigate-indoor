@@ -1,0 +1,15 @@
+# لا ترفع الباكج دي
+node_modules/
+app2/New folder/node_modules/
+
+# ملفات بيئة سرية
+.env
+
+# logs
+npm-debug.log*
+yarn-error.log*
+
+# system files
+.DS_Store
+Thumbs.db
+
