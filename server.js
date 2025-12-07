@@ -1,32 +1,37 @@
 // server.js (CommonJS)
 
-require("dotenv").config(); // يقرأ من ملف .env
+// تحميل متغيرات البيئة من .env (لو موجودة في الـ local)
+require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-const bodyParser = require("body-parser");
 const OpenAI = require("openai");
 
 const app = express();
-const port = 3000;
 
-app.use(cors());
-app.use(bodyParser.json());
+// ✅ استخدم PORT من الـ env في الاستضافة، و 3000 في الـ local
+const PORT = process.env.PORT || 3000;
 
-// ✅ اقرأ الـ API key من .env مرة واحدة
-const rawKey = process.env.OPENAI_API_KEY || "";
-console.log("OPENAI_API_KEY length:", rawKey.length);
-console.log(
-  "OPENAI_API_KEY preview:",
-  rawKey ? rawKey.slice(0, 10) + "..." + rawKey.slice(-4) : "NOT SET"
-);
+// ===== Middleware =====
+app.use(cors());          // لو حابب تقفله على Origin معيّن نقدر نزبطه
+app.use(express.json());  // بدل bodyParser.json()
 
-// ✅ client واحد بس
-const client = new OpenAI({
-  apiKey: rawKey,
+// ===== OpenAI Client =====
+const apiKey = process.env.OPENAI_API_KEY || "";
+
+// تحذير لو الـ key مش متظبط
+if (!apiKey) {
+  console.error("❌ OPENAI_API_KEY is not set. Please add it in your environment variables.");
+}
+
+const client = new OpenAI({ apiKey });
+
+// ===== Health Check (عشان الاختبار من البراوزر / Render) =====
+app.get("/", (req, res) => {
+  res.send("CU Navigate AI backend is running ✅");
 });
 
-// Endpoint للدردشة مع ChatGPT
+// ===== Chat Endpoint =====
 app.post("/api/chat", async (req, res) => {
   try {
     const { message, profile, schedule } = req.body;
@@ -76,24 +81,28 @@ ${scheduleJson}
       max_output_tokens: 400,
     });
 
-    // 🟢 محاولة استخراج النص من الـ response (SDK الجديد)
+    // ===== استخراج النص من الـ SDK الجديد =====
     let reply = "I could not generate a reply.";
+
     try {
-      const outputs = completion.output || [];
-      if (outputs.length > 0) {
-        const segments = outputs[0].content || [];
-        const text = segments
-          .map((seg) =>
-            typeof seg.text === "string"
-              ? seg.text
-              : (seg.text && seg.text.value) || ""
-          )
-          .join(" ")
-          .trim();
-        if (text) reply = text;
-      }
-    } catch (e) {
-      console.error("Parse error:", e);
+      const firstOutput = completion.output?.[0];
+      const blocks = firstOutput?.content || [];
+
+      const text = blocks
+        .map((block) => {
+          if (block.type === "output_text" && block.text) {
+            // block.text ممكن تكون string أو object { value }
+            if (typeof block.text === "string") return block.text;
+            if (typeof block.text.value === "string") return block.text.value;
+          }
+          return "";
+        })
+        .join(" ")
+        .trim();
+
+      if (text) reply = text;
+    } catch (parseErr) {
+      console.error("Parse error while reading OpenAI response:", parseErr);
     }
 
     res.json({ reply });
@@ -106,6 +115,7 @@ ${scheduleJson}
   }
 });
 
-app.listen(port, () => {
-  console.log(`CU Navigate AI server running at http://localhost:${port}`);
+// ===== Start Server =====
+app.listen(PORT, () => {
+  console.log(`🚀 CU Navigate AI server running on port ${PORT}`);
 });
