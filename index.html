@@ -80,31 +80,6 @@
     @keyframes fadeSlide{
       from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);}
     }
-  /* === Generic collapsible panel header === */
-.panel-header{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:8px;
-  cursor:pointer;
-}
-
-.panel-header-main{
-  display:flex;
-  flex-direction:column;
-}
-
-.panel-toggle{
-  font-size:14px;
-  color:#0a3d62;
-  flex-shrink:0;
-}
-
-/* جسم البانل لما يتقفل */
-.collapsed .panel-body{
-  display:none;
-}
-
     .panel-title{
       font-size:17px;font-weight:700;color:#0a3d62;margin-bottom:10px;
     }
@@ -432,7 +407,18 @@
 </div>
 <div id="search-results"></div>
 
-SIDE PANE
+<!-- SIDE PANEL -->
+<div id="side-panel">
+  <div class="panel-title">Navigation</div>
+  <div class="panel-subtitle">Select start and destination rooms, then hit "Find Route"</div>
+  <select id="fromRoomPanel" class="select-box"></select>
+  <select id="toRoomPanel" class="select-box"></select>
+  <button id="panelRouteBtn" class="route-btn">Find Route</button>
+  <button id="panelResetBtn" class="reset-btn">Reset</button>
+  <div id="route-info"></div>
+  <div id="directions-list"></div>
+</div>
+
 <!-- LOGIN OVERLAY -->
 <div id="login-overlay">
   <div class="login-card">
@@ -492,18 +478,9 @@ SIDE PANE
 
 <!-- ADS PANEL -->
 <div id="ads-panel">
-  <div id="ads-panel-header" class="panel-header">
-    <div class="panel-header-main">
-      <div class="ads-title">Campus Ads</div>
-    </div>
-    <div id="ads-toggle-arrow" class="panel-toggle">▾</div>
-  </div>
-
-  <div id="ads-panel-body" class="panel-body">
-    <div id="ads-list"></div>
-  </div>
+  <div class="ads-title">Campus Ads</div>
+  <div id="ads-list"></div>
 </div>
-
 
 <!-- AI CHAT PANEL -->
 <div id="ai-panel">
@@ -1795,74 +1772,27 @@ map.on('load', async ()=>{
   // رسالة ترحيب أول ما يفتح البوت
   appendAiMessage('ai', 'أهلا بيك في CU Navigate AI 👋 اسألني عن محاضراتك أو أي سؤال تاني.');
 
-  // ===== Panels toggle (My Day / Navigation / Ads) =====
+  // ===== User panel toggle =====
+  const userPanel = document.getElementById('user-panel');
+  const userHeader = document.getElementById('user-panel-header');
+  const userTitleText = document.getElementById('user-title-text');
+  const userPanelBody = document.getElementById('user-panel-body');
+  let userPanelCollapsed = false;
 
-// My Day panel
-const userPanel      = document.getElementById('user-panel');
-const userHeader     = document.getElementById('user-panel-header');
-const userTitleText  = document.getElementById('user-title-text');
-const userPanelBody  = document.getElementById('user-panel-body');
-let userPanelCollapsed = false;
-
-if (userHeader) {
-  userHeader.onclick = () => {
-    userPanelCollapsed = !userPanelCollapsed;
-    if (userPanelCollapsed) {
-      userPanel.classList.add('collapsed');
-      if (userPanelBody) userPanelBody.style.display = 'none';
-      if (userTitleText) userTitleText.textContent = 'MY DAY';
-    } else {
-      userPanel.classList.remove('collapsed');
-      if (userPanelBody) userPanelBody.style.display = 'block';
-      if (userTitleText) userTitleText.textContent = 'My Day';
-    }
-  };
-}
-
-// Navigation panel
-const navPanel      = document.getElementById('side-panel');
-const navHeader     = document.getElementById('nav-panel-header');
-const navPanelBody  = document.getElementById('nav-panel-body');
-const navArrow      = document.getElementById('nav-toggle-arrow');
-let navCollapsed    = false;
-
-if (navHeader) {
-  navHeader.onclick = () => {
-    navCollapsed = !navCollapsed;
-    if (navCollapsed) {
-      navPanel.classList.add('collapsed');
-      if (navPanelBody) navPanelBody.style.display = 'none';
-      if (navArrow) navArrow.textContent = '▸';
-    } else {
-      navPanel.classList.remove('collapsed');
-      if (navPanelBody) navPanelBody.style.display = 'block';
-      if (navArrow) navArrow.textContent = '▾';
-    }
-  };
-}
-
-// Ads panel
-const adsPanel      = document.getElementById('ads-panel');
-const adsHeader     = document.getElementById('ads-panel-header');
-const adsPanelBody  = document.getElementById('ads-panel-body');
-const adsArrow      = document.getElementById('ads-toggle-arrow');
-let adsCollapsed    = false;
-
-if (adsHeader) {
-  adsHeader.onclick = () => {
-    adsCollapsed = !adsCollapsed;
-    if (adsCollapsed) {
-      adsPanel.classList.add('collapsed');
-      if (adsPanelBody) adsPanelBody.style.display = 'none';
-      if (adsArrow) adsArrow.textContent = '▸';
-    } else {
-      adsPanel.classList.remove('collapsed');
-      if (adsPanelBody) adsPanelBody.style.display = 'block';
-      if (adsArrow) adsArrow.textContent = '▾';
-    }
-  };
-}
-
+  if(userHeader){
+    userHeader.onclick = ()=>{
+      userPanelCollapsed = !userPanelCollapsed;
+      if(userPanelCollapsed){
+        userPanel.classList.add('collapsed');
+        if(userPanelBody) userPanelBody.style.display = 'none';
+        if(userTitleText) userTitleText.textContent = 'MY DAYS';
+      }else{
+        userPanel.classList.remove('collapsed');
+        if(userPanelBody) userPanelBody.style.display = 'block';
+        if(userTitleText) userTitleText.textContent = 'My Day';
+      }
+    };
+  }
 
   // init
   loadProfileFromStorage();
