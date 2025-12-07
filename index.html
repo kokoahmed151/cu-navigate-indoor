@@ -80,6 +80,31 @@
     @keyframes fadeSlide{
       from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);}
     }
+  /* === Generic collapsible panel header === */
+.panel-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  cursor:pointer;
+}
+
+.panel-header-main{
+  display:flex;
+  flex-direction:column;
+}
+
+.panel-toggle{
+  font-size:14px;
+  color:#0a3d62;
+  flex-shrink:0;
+}
+
+/* جسم البانل لما يتقفل */
+.collapsed .panel-body{
+  display:none;
+}
+
     .panel-title{
       font-size:17px;font-weight:700;color:#0a3d62;margin-bottom:10px;
     }
@@ -394,186 +419,6 @@
     .ai-float-btn:hover{
       background:#124b7a;
     }
-    /* =======================
-   Responsive (tablet + mobile)
-   ======================= */
-@media (max-width: 1024px) {
-
-  html, body, #map{
-    width: 100%;
-    height: 100%;
-  }
-
-  /* TOP BAR – نفس الشكل بس أصغر وعرض الشاشة */
-  #top-bar{
-    top: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: calc(100% - 16px);
-    height: 46px;
-    padding: 6px 12px;
-    border-radius: 14px;
-    gap: 8px;
-  }
-
-  #logo{
-    font-size: 18px;
-  }
-
-  #search-box{
-    height: 32px;
-    font-size: 13px;
-    padding: 0 10px;
-  }
-
-  .top-btn{
-    font-size: 12px;
-    padding: 6px 10px;
-  }
-
-  /* NAVIGATION – كرت فوق، نفس الشكل بس أعرض شوية وصغير في الخط */
-  #side-panel{
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    right: auto;
-    top: 64px;
-    width: 94vw;
-    max-width: 460px;
-    padding: 14px 16px;
-    border-radius: 16px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.18);
-  }
-
-  .panel-title{
-    font-size: 15px;
-  }
-  .panel-subtitle{
-    font-size: 11px;
-  }
-  .select-box{
-    font-size: 13px;
-    padding: 7px 10px;
-  }
-  .route-btn{
-    font-size: 15px;
-    padding: 9px 0;
-  }
-  .reset-btn{
-    font-size: 13px;
-    padding: 7px 0;
-  }
-
-  /* MY DAY – تحت الـ Navigation بنفس العرض، ونقدر نخليه collapsible من السهم زي ما عملنا قبل كده */
-  #user-panel{
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    top: auto;
-    bottom: 210px;
-    width: 94vw;
-    max-width: 460px;
-    padding: 12px 16px;
-    border-radius: 16px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.18);
-  }
-
-  .user-input{
-    font-size: 12px;
-    padding: 6px 9px;
-  }
-  .user-btn,
-  .user-btn-secondary{
-    font-size: 12px;
-    padding: 7px 0;
-  }
-
-  /* ADS – تحت My Day على الشمال / في النص شوية */
-  #ads-panel{
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 115px;
-    top: auto;
-    width: 94vw;
-    max-width: 460px;
-    padding: 10px 14px;
-    border-radius: 16px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.18);
-  }
-
-  .ads-title{
-    font-size: 13px;
-  }
-  .ad-title{
-    font-size: 12px;
-  }
-  .ad-text{
-    font-size: 11px;
-  }
-
-  /* FLOORS – نفس الشكل الطولي على اليمين بس أصغر */
-  #floors-bar{
-    position: absolute;
-    right: 8px;
-    top: 100px;
-    bottom: auto;
-    width: 62px;
-    padding: 6px 0;
-    border-radius: 20px;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-  }
-
-  .floor-btn{
-    padding: 7px 0;
-    font-size: 11px;
-    border-bottom: 1px solid rgba(255,255,255,0.4);
-  }
-  .floor-btn:last-child{
-    border-bottom: none;
-  }
-
-  /* MAP CONTROLS – تحت يمين عمودي */
-  .map-controls{
-    right: 12px;
-    bottom: 80px;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .ctrl-btn{
-    width: 38px;
-    height: 38px;
-    font-size: 18px;
-  }
-
-  /* AI PANEL – فوق زر الشات ومقاس أصغر */
-  #ai-panel{
-    right: 8px;
-    left: auto;
-    bottom: 135px;
-    width: 94vw;
-    max-width: 360px;
-    max-height: 240px;
-  }
-
-  .ai-float-btn{
-    right: 16px;
-    bottom: 80px;
-    width: 52px;
-    height: 52px;
-  }
-}
-
-/* موبايل صغير جدًا (أقل من 600) نزود شوية تصغير في الخطوط */
-@media (max-width: 600px){
-  .panel-title{ font-size: 14px; }
-  .route-btn{ font-size: 14px; }
-  #logo{ font-size: 17px; }
-}
-
   </style>
 </head>
 
@@ -587,18 +432,7 @@
 </div>
 <div id="search-results"></div>
 
-<!-- SIDE PANEL -->
-<div id="side-panel">
-  <div class="panel-title">Navigation</div>
-  <div class="panel-subtitle">Select start and destination rooms, then hit "Find Route"</div>
-  <select id="fromRoomPanel" class="select-box"></select>
-  <select id="toRoomPanel" class="select-box"></select>
-  <button id="panelRouteBtn" class="route-btn">Find Route</button>
-  <button id="panelResetBtn" class="reset-btn">Reset</button>
-  <div id="route-info"></div>
-  <div id="directions-list"></div>
-</div>
-
+SIDE PANE
 <!-- LOGIN OVERLAY -->
 <div id="login-overlay">
   <div class="login-card">
@@ -658,9 +492,18 @@
 
 <!-- ADS PANEL -->
 <div id="ads-panel">
-  <div class="ads-title">Campus Ads</div>
-  <div id="ads-list"></div>
+  <div id="ads-panel-header" class="panel-header">
+    <div class="panel-header-main">
+      <div class="ads-title">Campus Ads</div>
+    </div>
+    <div id="ads-toggle-arrow" class="panel-toggle">▾</div>
+  </div>
+
+  <div id="ads-panel-body" class="panel-body">
+    <div id="ads-list"></div>
+  </div>
 </div>
+
 
 <!-- AI CHAT PANEL -->
 <div id="ai-panel">
@@ -1952,27 +1795,74 @@ map.on('load', async ()=>{
   // رسالة ترحيب أول ما يفتح البوت
   appendAiMessage('ai', 'أهلا بيك في CU Navigate AI 👋 اسألني عن محاضراتك أو أي سؤال تاني.');
 
-  // ===== User panel toggle =====
-  const userPanel = document.getElementById('user-panel');
-  const userHeader = document.getElementById('user-panel-header');
-  const userTitleText = document.getElementById('user-title-text');
-  const userPanelBody = document.getElementById('user-panel-body');
-  let userPanelCollapsed = false;
+  // ===== Panels toggle (My Day / Navigation / Ads) =====
 
-  if(userHeader){
-    userHeader.onclick = ()=>{
-      userPanelCollapsed = !userPanelCollapsed;
-      if(userPanelCollapsed){
-        userPanel.classList.add('collapsed');
-        if(userPanelBody) userPanelBody.style.display = 'none';
-        if(userTitleText) userTitleText.textContent = 'MY DAYS';
-      }else{
-        userPanel.classList.remove('collapsed');
-        if(userPanelBody) userPanelBody.style.display = 'block';
-        if(userTitleText) userTitleText.textContent = 'My Day';
-      }
-    };
-  }
+// My Day panel
+const userPanel      = document.getElementById('user-panel');
+const userHeader     = document.getElementById('user-panel-header');
+const userTitleText  = document.getElementById('user-title-text');
+const userPanelBody  = document.getElementById('user-panel-body');
+let userPanelCollapsed = false;
+
+if (userHeader) {
+  userHeader.onclick = () => {
+    userPanelCollapsed = !userPanelCollapsed;
+    if (userPanelCollapsed) {
+      userPanel.classList.add('collapsed');
+      if (userPanelBody) userPanelBody.style.display = 'none';
+      if (userTitleText) userTitleText.textContent = 'MY DAY';
+    } else {
+      userPanel.classList.remove('collapsed');
+      if (userPanelBody) userPanelBody.style.display = 'block';
+      if (userTitleText) userTitleText.textContent = 'My Day';
+    }
+  };
+}
+
+// Navigation panel
+const navPanel      = document.getElementById('side-panel');
+const navHeader     = document.getElementById('nav-panel-header');
+const navPanelBody  = document.getElementById('nav-panel-body');
+const navArrow      = document.getElementById('nav-toggle-arrow');
+let navCollapsed    = false;
+
+if (navHeader) {
+  navHeader.onclick = () => {
+    navCollapsed = !navCollapsed;
+    if (navCollapsed) {
+      navPanel.classList.add('collapsed');
+      if (navPanelBody) navPanelBody.style.display = 'none';
+      if (navArrow) navArrow.textContent = '▸';
+    } else {
+      navPanel.classList.remove('collapsed');
+      if (navPanelBody) navPanelBody.style.display = 'block';
+      if (navArrow) navArrow.textContent = '▾';
+    }
+  };
+}
+
+// Ads panel
+const adsPanel      = document.getElementById('ads-panel');
+const adsHeader     = document.getElementById('ads-panel-header');
+const adsPanelBody  = document.getElementById('ads-panel-body');
+const adsArrow      = document.getElementById('ads-toggle-arrow');
+let adsCollapsed    = false;
+
+if (adsHeader) {
+  adsHeader.onclick = () => {
+    adsCollapsed = !adsCollapsed;
+    if (adsCollapsed) {
+      adsPanel.classList.add('collapsed');
+      if (adsPanelBody) adsPanelBody.style.display = 'none';
+      if (adsArrow) adsArrow.textContent = '▸';
+    } else {
+      adsPanel.classList.remove('collapsed');
+      if (adsPanelBody) adsPanelBody.style.display = 'block';
+      if (adsArrow) adsArrow.textContent = '▾';
+    }
+  };
+}
+
 
   // init
   loadProfileFromStorage();
