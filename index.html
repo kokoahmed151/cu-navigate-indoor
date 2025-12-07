@@ -515,126 +515,24 @@
     padding-bottom:8px;
   }
 }
-/* ===== Mobile layout tweaks ===== */
-@media (max-width: 768px) {
-  /* خلي التوب بار أعرض و قريب من الحواف */
-  #top-bar{
-    top:10px;
-    left:50%;
-    transform:translateX(-50%);
-    width:94%;
-    height:44px;
-    padding:6px 12px;
-  }
+/* ===== Touch feedback (active state) ===== */
+button:active,
+.ctrl-btn:active,
+.floor-btn:active,
+.ad-card:active,
+.ai-float-btn:active {
+  transform: scale(0.96);
+  filter: brightness(0.9);
+}
 
-  #logo{
-    font-size:18px;
-  }
-
-  #search-box{
-    height:32px;
-    font-size:13px;
-  }
-
-  .top-btn{
-    padding:4px 10px;
-    font-size:12px;
-  }
-
-  /* البانل الجانبي تبقى شبه bottom sheet */
-  #side-panel{
-    left:8px;
-    right:8px;
-    width:auto;
-    top:60px;
-    padding:14px;
-    border-radius:14px;
-  }
-
-  /* البانل بتاع اليوم/البروفايل ينزل لتحت شوية */
-  #user-panel{
-    left:8px;
-    right:8px;
-    width:auto;
-    top:auto;
-    bottom:150px;
-    padding:12px;
-    border-radius:14px;
-  }
-
-  /* إعلانات الكامبس تبقى كارد صغيرة فوق الزرائر */
-  #ads-panel{
-    left:8px;
-    right:8px;
-    width:auto;
-    bottom:80px;
-    padding:10px 12px;
-    border-radius:14px;
-  }
-
-  /* شريط الأدوار يبقى أفقي تحت */
-  #floors-bar{
-    right:8px;
-    left:8px;
-    width:auto;
-    top:auto;
-    bottom:140px;
-    display:flex;
-    flex-direction:row;
-    justify-content:space-between;
-    padding:4px;
-  }
-  .floor-btn{
-    flex:1;
-    padding:6px 0;
-    font-size:12px;
-    border-bottom:none;
-    border-right:1px solid rgba(255,255,255,0.4);
-  }
-  .floor-btn:last-child{
-    border-right:none;
-  }
-
-  /* كنترولز الزوم تتحرك فوق شوية و تبقى صف واحد */
-  .map-controls{
-    right:8px;
-    bottom:20px;
-    flex-direction:row;
-    gap:8px;
-  }
-
-  .ctrl-btn{
-    width:44px;
-    height:44px;
-    font-size:20px;
-  }
-
-  /* زرار الـ AI يطلع فوق شوية عشان ميتغطاش */
-  .ai-float-btn{
-    right:12px;
-    bottom:80px;
-    width:54px;
-    height:54px;
-    font-size:22px;
-  }
-
-  /* البانل نفسه يبقى Full width تقريبا */
-  #ai-panel{
-    right:8px;
-    left:8px;
-    width:auto;
-    bottom:80px;
-    max-height:260px;
-  }
-
-  /* تكبير لمس العناصر (hit area أكبر) */
-  button,
-  .ctrl-btn,
-  .floor-btn,
-  .ad-card{
-    padding-top:8px;
-    padding-bottom:8px;
-  }
+/* عشان ميحصلش اختيار للنص مع اللمس */
+button,
+.ctrl-btn,
+.floor-btn,
+.ad-card,
+.ai-float-btn {
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
   </style>
