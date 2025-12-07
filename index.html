@@ -394,145 +394,176 @@
     .ai-float-btn:hover{
       background:#124b7a;
     }
-    /* ===== Mobile layout tweaks ===== */
+    /* ========= Mobile layout tweaks ========= */
 @media (max-width: 768px) {
-  /* خلي التوب بار أعرض و قريب من الحواف */
+
+  html, body, #map {
+    height: 100%;
+  }
+
+  body {
+    font-size: 14px;
+  }
+
+  /* TOP BAR */
   #top-bar{
-    top:10px;
-    left:50%;
-    transform:translateX(-50%);
-    width:94%;
-    height:44px;
-    padding:6px 12px;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 16px);
+    height: 44px;
+    padding: 6px 12px;
+    border-radius: 12px;
   }
 
   #logo{
-    font-size:18px;
+    font-size: 18px;
   }
 
   #search-box{
-    height:32px;
-    font-size:13px;
+    height: 32px;
+    font-size: 13px;
   }
 
   .top-btn{
-    padding:4px 10px;
-    font-size:12px;
+    padding: 4px 10px;
+    font-size: 12px;
   }
 
-  /* البانل الجانبي تبقى شبه bottom sheet */
+  /* MAIN NAV PANEL */
   #side-panel{
-    left:8px;
-    right:8px;
-    width:auto;
-    top:60px;
-    padding:14px;
-    border-radius:14px;
+    top: 60px;
+    left: 8px;
+    width: calc(100% - 16px);
+    padding: 14px 14px 12px;
+    border-radius: 14px;
   }
 
-  /* البانل بتاع اليوم/البروفايل ينزل لتحت شوية */
+  .panel-title{
+    font-size: 16px;
+  }
+  .panel-subtitle{
+    font-size: 11px;
+  }
+  .select-box{
+    font-size: 13px;
+    padding: 7px 10px;
+  }
+  .route-btn{
+    height: 40px;
+    font-size: 15px;
+  }
+  .reset-btn{
+    height: 34px;
+    font-size: 13px;
+  }
+
+  /* MY DAY PANEL */
   #user-panel{
-    left:8px;
-    right:8px;
-    width:auto;
-    top:auto;
-    bottom:150px;
-    padding:12px;
-    border-radius:14px;
+    top: auto;
+    left: 8px;
+    width: calc(100% - 16px);
+    bottom: 190px;          /* فوق الإعلانات والـ floors */
+    padding: 12px;
+    border-radius: 14px;
   }
 
-  /* إعلانات الكامبس تبقى كارد صغيرة فوق الزرائر */
+  .user-input{
+    font-size: 13px;
+    padding: 6px 9px;
+  }
+  .user-btn,
+  .user-btn-secondary{
+    font-size: 13px;
+    padding: 7px 0;
+  }
+
+  /* ADS PANEL */
   #ads-panel{
-    left:8px;
-    right:8px;
-    width:auto;
-    bottom:80px;
-    padding:10px 12px;
-    border-radius:14px;
+    left: 8px;
+    width: calc(100% - 16px);
+    bottom: 120px;          /* فوق الـ floors bar */
+    padding: 10px 12px;
+    border-radius: 14px;
+  }
+  .ads-title{
+    font-size: 13px;
+  }
+  .ad-title{
+    font-size: 13px;
+  }
+  .ad-text{
+    font-size: 11px;
   }
 
-  /* شريط الأدوار يبقى أفقي تحت */
+  /* FLOORS BAR كـ bottom tab bar */
   #floors-bar{
-    right:8px;
-    left:8px;
-    width:auto;
-    top:auto;
-    bottom:140px;
-    display:flex;
-    flex-direction:row;
-    justify-content:space-between;
-    padding:4px;
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    width: auto;
+    height: 50px;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    padding: 0;
+    border-radius: 999px;
   }
+
   .floor-btn{
-    flex:1;
-    padding:6px 0;
-    font-size:12px;
-    border-bottom:none;
-    border-right:1px solid rgba(255,255,255,0.4);
+    flex: 1;
+    border-bottom: none;
+    border-right: 1px solid rgba(255,255,255,0.4);
+    font-size: 13px;
+    padding: 0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
   }
   .floor-btn:last-child{
-    border-right:none;
+    border-right: none;
   }
 
-  /* كنترولز الزوم تتحرك فوق شوية و تبقى صف واحد */
+  /* MAP CONTROLS */
   .map-controls{
-    right:8px;
-    bottom:20px;
-    flex-direction:row;
-    gap:8px;
+    right: 10px;
+    bottom: 70px;      /* عشان ما يغطيش الـ floors */
   }
-
   .ctrl-btn{
-    width:44px;
-    height:44px;
-    font-size:20px;
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
   }
 
-  /* زرار الـ AI يطلع فوق شوية عشان ميتغطاش */
+  /* AI BUTTON فوق الـ floors بشوية */
   .ai-float-btn{
-    right:12px;
-    bottom:80px;
-    width:54px;
-    height:54px;
-    font-size:22px;
+    right: 20px;
+    bottom: 78px;
+    width: 52px;
+    height: 52px;
   }
 
-  /* البانل نفسه يبقى Full width تقريبا */
+  /* AI PANEL */
   #ai-panel{
-    right:8px;
-    left:8px;
-    width:auto;
-    bottom:80px;
-    max-height:260px;
+    right: 8px;
+    left: 8px;
+    width: auto;
+    bottom: 140px;
+    max-height: 220px;
   }
 
-  /* تكبير لمس العناصر (hit area أكبر) */
-  button,
-  .ctrl-btn,
-  .floor-btn,
-  .ad-card{
-    padding-top:8px;
-    padding-bottom:8px;
+  /* شوية active feedback للموبايل */
+  .route-btn:active,
+  .reset-btn:active,
+  .user-btn:active,
+  .user-btn-secondary:active,
+  .ctrl-btn:active,
+  .ai-float-btn:active,
+  .floor-btn:active{
+    transform: scale(0.97);
+    transition: transform 0.08s;
   }
-}
-/* ===== Touch feedback (active state) ===== */
-button:active,
-.ctrl-btn:active,
-.floor-btn:active,
-.ad-card:active,
-.ai-float-btn:active {
-  transform: scale(0.96);
-  filter: brightness(0.9);
-}
-
-/* عشان ميحصلش اختيار للنص مع اللمس */
-button,
-.ctrl-btn,
-.floor-btn,
-.ad-card,
-.ai-float-btn {
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
 }
 
   </style>
@@ -1829,88 +1860,89 @@ map.on('load', async ()=>{
     return false;
   }
 
-  // ===== AI CHAT HOOKUP =====
-const aiMessages = document.getElementById('ai-messages');
-const aiInput    = document.getElementById('ai-input');
-const aiSendBtn  = document.getElementById('ai-send-btn');
-const aiPanel    = document.getElementById('ai-panel');
-const aiToggleBtn= document.getElementById('ai-toggle-btn');
+   // ===== AI CHAT HOOKUP =====
+  const aiMessages = document.getElementById('ai-messages');
+  const aiInput    = document.getElementById('ai-input');
+  const aiSendBtn  = document.getElementById('ai-send-btn');
+  const aiPanel    = document.getElementById('ai-panel');
+  const aiToggleBtn= document.getElementById('ai-toggle-btn');
 
-let aiPanelOpen = false;
+  let aiPanelOpen = false;
 
-// 👇 مهم جداً: نختار الـ API URL حسب المكان اللي الصفحة شغّالة منه
-const apiBase =
-  window.location.hostname === "localhost"
-    ? "http://localhost:3000" // لما تكون شغّال عندك على الجهاز
-    : "https://cu-navigate-indoor-production.up.railway.app"; // backend على Railway
-
-function openAiPanel(){
-  if(aiPanel){
-    aiPanel.style.display = 'flex';
-    aiPanelOpen = true;
-  }
-}
-function closeAiPanel(){
-  if(aiPanel){
-    aiPanel.style.display = 'none';
-    aiPanelOpen = false;
-  }
-}
-
-if(aiToggleBtn){
-  aiToggleBtn.onclick = ()=>{
-    if(aiPanelOpen) closeAiPanel();
-    else openAiPanel();
-  };
-}
-
-function appendAiMessage(sender, text){
-  if(!aiMessages) return;
-  const div = document.createElement('div');
-  div.className = 'ai-msg ' + (sender === 'user' ? 'ai-msg-user' : 'ai-msg-ai');
-  div.textContent = text;
-  aiMessages.appendChild(div);
-  aiMessages.scrollTop = aiMessages.scrollHeight;
-}
-
-async function sendAiMessage(){
-  const msg = (aiInput.value || '').trim();
-  if(!msg) return;
-  appendAiMessage('user', msg);
-  aiInput.value = '';
-
-  try{
-    const res = await fetch(`${apiBase}/api/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json' },
-      body: JSON.stringify({
-        message: msg,
-        profile: studentProfile,
-        schedule: currentSchedule
-      })
-    });
-
-    if(!res.ok){
-      appendAiMessage('ai', '❌ حصل خطأ في الاتصال بالسيرفر.');
-      return;
+  function openAiPanel(){
+    if(aiPanel){
+      aiPanel.style.display = 'flex';
+      aiPanelOpen = true;
     }
-
-    const data = await res.json();
-    appendAiMessage('ai', data.reply || 'ماقدرتش أطلع رد يا نجم.');
-  } catch(err){
-    console.error('AI error:', err);
-    appendAiMessage('ai', '⚠️ حصل Error في الاتصال بالـ AI.');
   }
-}
+  function closeAiPanel(){
+    if(aiPanel){
+      aiPanel.style.display = 'none';
+      aiPanelOpen = false;
+    }
+  }
 
-if(aiSendBtn && aiInput){
-  aiSendBtn.onclick = sendAiMessage;
-  aiInput.addEventListener('keydown', (e)=>{
-    if(e.key === 'Enter') sendAiMessage();
-  });
-}
+  if(aiToggleBtn){
+    aiToggleBtn.onclick = ()=>{
+      if(aiPanelOpen) closeAiPanel();
+      else openAiPanel();
+    };
+  }
 
-appendAiMessage('ai', 'أهلا بيك في CU Navigate AI 👋 اسألني عن محاضراتك أو أي سؤال تاني.');
+  function appendAiMessage(sender, text){
+    if(!aiMessages) return;
+    const div = document.createElement('div');
+    div.className = 'ai-msg ' + (sender === 'user' ? 'ai-msg-user' : 'ai-msg-ai');
+    div.textContent = text;
+    aiMessages.appendChild(div);
+    aiMessages.scrollTop = aiMessages.scrollHeight;
+  }
+
+  // 👇 نحدد الـ API base: لو لوكال يستعمل localhost، لو لا يستعمل Railway
+  const apiBase =
+    window.location.hostname === "localhost"
+      ? "http://localhost:3000"
+      : "https://cu-navigate-indoor-production.up.railway.app";
+
+  async function sendAiMessage() {
+    const msg = (aiInput.value || "").trim();
+    if (!msg) return;
+    appendAiMessage("user", msg);
+    aiInput.value = "";
+
+    try {
+      const res = await fetch(`${apiBase}/api/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: msg,
+          profile: studentProfile,
+          schedule: currentSchedule,
+        }),
+      });
+
+      if (!res.ok) {
+        appendAiMessage("ai", "❌ حصل خطأ في الاتصال بالسيرفر.");
+        return;
+      }
+
+      const data = await res.json();
+      appendAiMessage("ai", data.reply || "ماقدرتش أطلع رد يا نجم.");
+    } catch (err) {
+      console.error("AI error:", err);
+      appendAiMessage("ai", "⚠️ حصل Error في الاتصال بالـ AI.");
+    }
+  }
+
+  if(aiSendBtn && aiInput){
+    aiSendBtn.onclick = sendAiMessage;
+    aiInput.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter') sendAiMessage();
+    });
+  }
+
+  // رسالة ترحيب أول ما يفتح البوت
+  appendAiMessage('ai', 'أهلا بيك في CU Navigate AI 👋 اسألني عن محاضراتك أو أي سؤال تاني.');
 
   // ===== User panel toggle =====
   const userPanel = document.getElementById('user-panel');
