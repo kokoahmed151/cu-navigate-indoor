@@ -155,7 +155,7 @@
     /* USER / SCHEDULE PANEL */
     #user-panel{
       position:absolute;
-      top:435px;
+      top: 435px;
       left:20px;
       width:300px;
       background:rgba(255,255,255,0.22);
@@ -579,86 +579,47 @@ function findNearestNode(point,nodes){
   }
   return nearest;
 }
-
-// نخزن level لكل edge في شبكة المسارات
-const edgeLevels = new Map();
-
 function buildGraph(features){
-  const g = new Map();
-  for (const f of features) {
-    const geom = f.geometry;
-    if (!geom) continue;
-
-    const levelId = f.properties?.LEVEL_ID || f.properties?.LEVEL_NAME || f.properties?.LEVEL || f.properties?.level || 'UNKNOWN';
-
-    const lines = (geom.type === 'MultiLineString'
+  const g=new Map();
+  for(const f of features){
+    const geom=f.geometry;
+    if(!geom) continue;
+    const lines = (geom.type==='MultiLineString'
       ? geom.coordinates
-      : (geom.type === 'LineString' ? [geom.coordinates] : []));
-
-    for (const ln of lines) {
-      for (let i = 0; i < ln.length - 1; i++) {
-        const a = ln[i], b = ln[i+1];
-        const ka = a.join(','), kb = b.join(',');
-
-        if (!g.has(ka)) g.set(ka, []);
-        if (!g.has(kb)) g.set(kb, []);
-
-        const w = distance(a,b);
-
-        const edgeKey1 = ka + '|' + kb;
-        const edgeKey2 = kb + '|' + ka;
-        if (levelId) {
-          edgeLevels.set(edgeKey1, levelId);
-          edgeLevels.set(edgeKey2, levelId);
-        }
-
-        g.get(ka).push({ node: kb, weight: w, level: levelId });
-        g.get(kb).push({ node: ka, weight: w, level: levelId });
+      : (geom.type==='LineString' ? [geom.coordinates] : []));
+    for(const ln of lines){
+      for(let i=0;i<ln.length-1;i++){
+        const a=ln[i], b=ln[i+1];
+        const ka=a.join(','), kb=b.join(',');
+        if(!g.has(ka)) g.set(ka,[]);
+        if(!g.has(kb)) g.set(kb,[]);
+        const w=distance(a,b);
+        g.get(ka).push({node:kb,weight:w});
+        g.get(kb).push({node:ka,weight:w});
       }
     }
   }
   return g;
 }
-
 function addTransitions(g, features){
-  for (const f of features) {
-    const geom = f.geometry;
-    if (!geom) continue;
-
-    const line = (geom.type === 'LineString'
+  for(const f of features){
+    const geom=f.geometry;
+    if(!geom) continue;
+    const line = (geom.type==='LineString'
       ? geom.coordinates
-      : (geom.type === 'MultiLineString' ? geom.coordinates[0] : null));
-
-    if (!line || line.length < 2) continue;
-
-    const a = line[0], b = line[line.length-1];
-    const ka = a.join(','), kb = b.join(',');
-
-    if (!g.has(ka)) g.set(ka, []);
-    if (!g.has(kb)) g.set(kb, []);
-
-    const w = f.properties && f.properties.LENGTH_3D
+      : (geom.type==='MultiLineString' ? geom.coordinates[0] : null));
+    if(!line || line.length<2) continue;
+    const a=line[0], b=line[line.length-1];
+    const ka=a.join(','), kb=b.join(',');
+    if(!g.has(ka)) g.set(ka,[]);
+    if(!g.has(kb)) g.set(kb,[]);
+    const w=f.properties && f.properties.LENGTH_3D
       ? f.properties.LENGTH_3D
       : distance(a,b);
-
-    // 👈 تعريف مفاتيح الـ edge
-    const edgeKey1 = ka + '|' + kb;
-    const edgeKey2 = kb + '|' + ka;
-
-    // 👈 نقرأ level من خصائص الترانزيشن
-    const fromLevel = f.properties?.LEVEL_NAME_FROM || f.properties?.LEVEL_ID_FROM || 'UNKNOWN';
-    const toLevel   = f.properties?.LEVEL_NAME_TO   || f.properties?.LEVEL_ID_TO   || 'UNKNOWN';
-
-    edgeLevels.set(edgeKey1, fromLevel);
-    edgeLevels.set(edgeKey2, toLevel);
-
-    // 👈 نفس ما هو: edge نوعه TRANSITION في الجراف
-    g.get(ka).push({ node: kb, weight: w, level: 'TRANSITION' });
-    g.get(kb).push({ node: ka, weight: w, level: 'TRANSITION' });
+    g.get(ka).push({node:kb,weight:w});
+    g.get(kb).push({node:ka,weight:w});
   }
 }
-
-
 function dijkstra(graph,start,end){
   const dist={}, prev={}, q=new Set(graph.keys());
   for(const n of q) dist[n]=Infinity;
@@ -686,6 +647,63 @@ function dijkstra(graph,start,end){
   return path;
 }
 
+// floor index from LEVEL_ID
+function getFloorIndexFromLevelId(lvl){
+  const m = String(lvl).match(/\d+/);
+  return m ? parseInt(m[0],10) - 1 : 0;
+}
+
+// build 2D tiled route (MazeMap style)
+function buildRouteExtrusion(path, currentFloorIndex) {
+  const width = 0.000012;
+  const features = [];
+
+  for (let i = 0; i < path.length - 1; i++) {
+    const p1 = path[i];
+    const p2 = path[i + 1];
+
+    const x1 = p1[0], y1 = p1[1], z1 = p1[2] || 0;
+    const x2 = p2[0], y2 = p2[1], z2 = p2[2] || 0;
+
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const len = Math.sqrt(dx*dx + dy*dy);
+    if (!len) continue;
+
+    const ux = -dy / len;
+    const uy =  dx / len;
+    const half = width / 2;
+
+    const l1 = [x1 + ux * half, y1 + uy * half];
+    const r1 = [x1 - ux * half, y1 - uy * half];
+    const l2 = [x2 + ux * half, y2 + uy * half];
+    const r2 = [x2 - ux * half, y2 - uy * half];
+
+    const floorIndex1 = Math.round(z1 / 5);
+    const floorIndex2 = Math.round(z2 / 5);
+    const floorIndex = Math.round((floorIndex1 + floorIndex2) / 2);
+
+    features.push({
+      type: 'Feature',
+      properties: {
+        floorIndex,
+        isCurrentLevel: currentFloorIndex == null ? true : (floorIndex === currentFloorIndex)
+      },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [[l1, l2, r2, r1, l1]]
+      }
+    });
+  }
+
+  return { type: 'FeatureCollection', features };
+}
+
+/* Animation vars */
+let animatedMarker = null;
+let animationFrameId = null;
+let lastRoutePath = null;
+
 // profile / schedule / ads
 let studentProfile = null;
 let currentSchedule = [];
@@ -694,7 +712,6 @@ let entranceRoomId = null;
 let adsData = [];
 
 map.on('load', async ()=>{
-
   let detailsData, pathwaysData, transitionsData, unitsData, levelsData;
   try {
     [
@@ -730,15 +747,6 @@ map.on('load', async ()=>{
     nodesByLevel[lvl] = [...g.keys()].map(s=>s.split(',').map(Number));
   });
 
-  function getSegmentLevel(u, v) {
-    const key1 = u.join(',') + '|' + v.join(',');
-    const key2 = v.join(',') + '|' + u.join(',');
-
-    if (edgeLevels.has(key1)) return edgeLevels.get(key1);
-    if (edgeLevels.has(key2)) return edgeLevels.get(key2);
-    return null;
-  }
-
   const fromPanel = document.getElementById('fromRoomPanel');
   const toPanel   = document.getElementById('toRoomPanel');
   const searchBox = document.getElementById('search-box');
@@ -755,7 +763,7 @@ map.on('load', async ()=>{
     return [sx/n, sy/n];
   }
 
-  // Rooms
+  // Rooms from Units
   unitsData.features.forEach((f,i)=>{
     const props=f.properties || {};
     let rawName = props.USE_TYPE || props.NAME || props.NAME_LONG || `Unit ${i}`;
@@ -784,29 +792,21 @@ map.on('load', async ()=>{
     });
   }
 
+  // bring route + highlight to front
   function bringRouteToFront(){
-    ['route-transitions', 'route', 'route-casing'].forEach(id=>{
+    [
+      'highlight-room-outline',
+      'highlight-room-fill',
+      'route-3d-shadow',
+      'route-3d',
+      'route-casing',
+      'route'
+    ].forEach(id=>{
       if(map.getLayer(id)) map.moveLayer(id);
     });
   }
 
-  function updateRouteStyleForCurrentLevel(){
-    if (map.getLayer('route-casing')) {
-      map.setPaintProperty('route-casing', 'line-color', [
-        'case',
-        ['==', ['get', 'level'], currentLevel], '#cde8ff',
-        '#e5e7eb'
-      ]);
-    }
-    if (map.getLayer('route')) {
-      map.setPaintProperty('route', 'line-color', [
-        'case',
-        ['==', ['get', 'level'], currentLevel], '#007aff',
-        '#b0b4bd'
-      ]);
-    }
-  }
-
+  // draw one level
   function drawLevel(lvl){
     const sources = ['indoor-level','indoor-details','indoor-pathways','indoor-transitions','indoor-units'];
     const layers  = ['level-bg','walls','walls-flat','pathways','transitions','units','labels-rooms'];
@@ -814,10 +814,10 @@ map.on('load', async ()=>{
     layers.forEach(id=>map.getLayer(id)&&map.removeLayer(id));
     sources.forEach(id=>map.getSource(id)&&map.removeSource(id));
 
+    // Floor base
     const levelFeatures = levelsData.features.filter(f=>f.properties.LEVEL_ID===lvl);
     if(levelFeatures.length){
       map.addSource('indoor-level',{
-
         type:'geojson',
         data:{type:'FeatureCollection',features:levelFeatures}
       });
@@ -832,6 +832,7 @@ map.on('load', async ()=>{
       });
     }
 
+    // WALLS
     const floorDetails = detailsData.features.filter(f=>f.properties.LEVEL_ID===lvl);
     const polys = floorDetails.map(f=>{
       if(f.geometry.type==='MultiLineString'){
@@ -877,19 +878,29 @@ map.on('load', async ()=>{
       id:'walls-flat',
       type:'fill',
       source:'indoor-details',
-      filter:['!', ['match',['get','USE_TYPE'],true,false]],
       paint:{
         'fill-color':'#f9f8f4',
         'fill-opacity':0
       }
     });
 
+    // PATHWAYS
     const floorPw = pathwaysData.features.filter(f=>f.properties.LEVEL_ID===lvl);
     map.addSource('indoor-pathways',{
       type:'geojson',
       data:{type:'FeatureCollection',features:floorPw}
     });
+    map.addLayer({
+      id:'pathways',
+      type:'line',
+      source:'indoor-pathways',
+      paint:{
+        'line-color':'#b3c6ff',
+        'line-width':1.5
+      }
+    });
 
+    // TRANSITIONS
     const floorTr = transitionsData.features.filter(
       f=>f.properties.LEVEL_NAME_FROM===lvl || f.properties.LEVEL_NAME_TO===lvl
     );
@@ -907,6 +918,7 @@ map.on('load', async ()=>{
       }
     });
 
+    // UNITS + labels
     const floorUnits = unitsData.features
       .filter(f=>f.properties.LEVEL_ID===lvl)
       .map(f=>{
@@ -958,224 +970,278 @@ map.on('load', async ()=>{
     });
 
     currentLevel=lvl;
-    updateRouteStyleForCurrentLevel();
+
+    if (lastRoutePath && lastRoutePath.length > 1 && map.getSource('route-3d')) {
+      const currentFloorIndex = getFloorIndexFromLevelId(currentLevel);
+      const extrusionData = buildRouteExtrusion(lastRoutePath, currentFloorIndex);
+      map.getSource('route-3d').setData(extrusionData);
+    }
+
     bringRouteToFront();
   }
 
-  // Floor buttons
   levels.forEach(lvl=>{
-  const btn=document.createElement('div');
-  btn.className='floor-btn';
-  btn.innerText=lvl;
-  btn.onclick=()=>{
-    drawLevel(lvl);
-    markFloor(lvl);
-    currentLevel = lvl;              // 👈 حدّث الدور الحالي
-    updateRouteStyleForCurrentLevel(); // 👈 عدّل لون المسار
-  };
-  floorsBar.appendChild(btn);
-});
+    const btn=document.createElement('div');
+    btn.className='floor-btn';
+    btn.innerText=lvl;
+    btn.onclick=()=>{
+      drawLevel(lvl);
+      markFloor(lvl);
+    };
+    floorsBar.appendChild(btn);
+  });
 
   markFloor(currentLevel);
   drawLevel(currentLevel);
 
-  // ===== Route drawing / animation =====
- function clearRoute() {
-  ['route', 'route-casing', 'route-transitions'].forEach(id => {
-    if (map.getLayer(id)) map.removeLayer(id);
-  });
+  function startRouteMarkerAnimation(path) {
+    if (animatedMarker) {
+      animatedMarker.remove();
+      animatedMarker = null;
+    }
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = null;
+    }
 
-  ['route-lines', 'route-transitions-src'].forEach(id => {
-    if (map.getSource(id)) map.removeSource(id);
-  });
+    animatedMarker = new maplibregl.Marker({color:'#2ecc71'})
+      .setLngLat([path[0][0], path[0][1]])
+      .addTo(map);
 
-  routeInfo.textContent = '';
-  directionsList.innerHTML = '';
-}
+    const flatPath = path.map(p => [p[0], p[1]]);
+    const segmentLengths = [];
+    let totalLength = 0;
+    for (let i=0; i<flatPath.length-1; i++) {
+      const d = distance(flatPath[i], flatPath[i+1]);
+      segmentLengths.push(d);
+      totalLength += d;
+    }
 
+    let t = 0;
 
+    function animate() {
+      t += totalLength / 500;
+      if (t > totalLength) t = 0;
 
-function drawRoute(path) {
-  clearRoute();
-  if (!path || path.length < 2) return;
+      let distLeft = t;
+      let idx = 0;
+      while (idx < segmentLengths.length && distLeft > segmentLengths[idx]) {
+        distLeft -= segmentLengths[idx];
+        idx++;
+      }
 
-  const lineFeatures = [];
-  const transitionPoints = [];
+      if (idx >= segmentLengths.length) {
+        animatedMarker.setLngLat(flatPath[flatPath.length-1]);
+      } else {
+        const p1 = flatPath[idx];
+        const p2 = flatPath[idx+1];
+        const r = segmentLengths[idx] === 0 ? 0 : distLeft / segmentLengths[idx];
+        const lng = p1[0] + (p2[0]-p1[0])*r;
+        const lat = p1[1] + (p2[1]-p1[1])*r;
+        animatedMarker.setLngLat([lng,lat]);
+      }
 
-  for (let i = 0; i < path.length - 1; i++) {
-    const u = path[i];
-    const v = path[i + 1];
+      animationFrameId = requestAnimationFrame(animate);
+    }
 
-    const segLevel = getSegmentLevel(u, v) || 'UNKNOWN';
+    animationFrameId = requestAnimationFrame(animate);
+  }
 
-    // سيجمنت الخط (flat 2D)
-    lineFeatures.push({
-      type: 'Feature',
-      properties: {
-        level: segLevel
-      },
-      geometry: {
-        type: 'LineString',
-        coordinates: [
-          [u[0], u[1]],
-          [v[0], v[1]]
-        ]
+  function clearRoute() {
+    if(map.getLayer('route')) map.removeLayer('route');
+    if(map.getLayer('route-casing')) map.removeLayer('route-casing');
+    if(map.getSource('route-line')) map.removeSource('route-line');
+
+    if(map.getLayer('route-3d')) map.removeLayer('route-3d');
+    if(map.getLayer('route-3d-shadow')) map.removeLayer('route-3d-shadow');
+    if(map.getSource('route-3d')) map.removeSource('route-3d');
+
+    routeInfo.textContent='';
+    directionsList.innerHTML='';
+
+    if (animatedMarker) {
+      animatedMarker.remove();
+      animatedMarker = null;
+    }
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = null;
+    }
+
+    lastRoutePath = null;
+  }
+
+  function drawRoute(path){
+    clearRoute();
+
+    const lineCoords = path.map(p => [p[0], p[1]]);
+
+    map.addSource('route-line',{
+      type:'geojson',
+      data:{
+        type:'FeatureCollection',
+        features:[{
+          type:'Feature',
+          geometry:{type:'LineString',coordinates:lineCoords}
+        }]
       }
     });
 
-    // transition point لما نغيّر الدور
-    if (i > 0) {
-      const prevLevel = getSegmentLevel(path[i - 1], u) || 'UNKNOWN';
-      if (prevLevel !== segLevel &&
-          prevLevel !== 'TRANSITION' &&
-          segLevel !== 'TRANSITION') {
-        transitionPoints.push({
-          type: 'Feature',
-          properties: {
-            fromLevel: prevLevel,
-            toLevel: segLevel
-          },
-          geometry: {
-            type: 'Point',
-            coordinates: [u[0], u[1]]
-          }
-        });
-      }
-    }
-  }
-
-  const routeGeoJSON = {
-    type: 'FeatureCollection',
-    features: lineFeatures
-  };
-
-  const transitionsGeoJSON = {
-    type: 'FeatureCollection',
-    features: transitionPoints
-  };
-
-  // إذا المسار كله على دور واحد، نبدّل العرض للدور ده علشان المسار يبان
-  try {
-    const routeLevels = [...new Set(lineFeatures.map(f => f.properties.level).filter(l => l && l !== 'UNKNOWN' && l !== 'TRANSITION'))];
-    if (routeLevels.length === 1) {
-      const routeLevel = routeLevels[0];
-      if (routeLevel && routeLevel !== currentLevel) {
-        drawLevel(routeLevel);
-        markFloor(routeLevel);
-        currentLevel = routeLevel;
-        updateRouteStyleForCurrentLevel();
-      }
-    }
-  } catch (e) {
-    console.warn('Could not auto-switch level for route:', e);
-  }
-
-  // مصدر الخطوط
-  map.addSource('route-lines', {
-    type: 'geojson',
-    data: routeGeoJSON
-  });
-
-  // مصدر نقاط الترانزيشن
-  map.addSource('route-transitions-src', {
-    type: 'geojson',
-    data: transitionsGeoJSON
-  });
-
-  // casing عريض
-  map.addLayer({
-    id: 'route-casing',
-    type: 'line',
-    source: 'route-lines',
-    paint: {
-      'line-color': [
-        'case',
-        ['==', ['get', 'level'], currentLevel], '#cde8ff',
-        '#e5e7eb'
-      ],
-      'line-width': 10,
-      'line-opacity': 0.95,
-      'line-cap': 'round',
-      'line-join': 'round'
-    }
-  });
-
-  // الخط الأساسي
-  map.addLayer({
-    id: 'route',
-    type: 'line',
-    source: 'route-lines',
-    paint: {
-      'line-color': [
-        'case',
-        ['==', ['get', 'level'], currentLevel], '#007aff', // الدور الحالي
-        '#b0b4bd'                                          // باقي الأدوار
-      ],
-      'line-width': 6,
-      'line-opacity': 1,
-      'line-cap': 'round',
-      'line-join': 'round'
-    }
-  });
-
-  // نقاط الترانزيشن (سلم / مصعد)
-  map.addLayer({
-    id: 'route-transitions',
-    type: 'circle',
-    source: 'route-transitions-src',
-    paint: {
-      'circle-radius': 5,
-      'circle-color': '#ff9800',       // برتقالي
-      'circle-stroke-color': '#ffffff',
-      'circle-stroke-width': 1.5
-    }
-  });
-
-  // نحدّث الألوان حسب الدور الحالي ونخلي المسار فوق
-  updateRouteStyleForCurrentLevel();
-  bringRouteToFront();
-
-  // Diagnostic: log feature count and fit map to route bounds so it's visible
-  try {
-    console.log('drawRoute: features=', routeGeoJSON.features.length);
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    routeGeoJSON.features.forEach(f => {
-      if (f.geometry && f.geometry.type === 'LineString') {
-        f.geometry.coordinates.forEach(c => {
-          const x = c[0], y = c[1];
-          if (x < minX) minX = x;
-          if (y < minY) minY = y;
-          if (x > maxX) maxX = x;
-          if (y > maxY) maxY = y;
-        });
+    map.addLayer({
+      id: 'route-casing',
+      type: 'line',
+      source: 'route-line',
+      paint: {
+        'line-color': '#cde8ff',
+        'line-width': 8,
+        'line-opacity': 0.95,
+        'line-cap': 'round',
+        'line-join': 'round'
       }
     });
-    if (isFinite(minX) && isFinite(minY) && isFinite(maxX) && isFinite(maxY)) {
-      const bounds = [[minX, minY], [maxX, maxY]];
-      console.log('drawRoute: bounds=', bounds);
-      map.fitBounds(bounds, { padding: 80, duration: 1000 });
+
+    map.addLayer({
+      id:'route',
+      type:'line',
+      source:'route-line',
+      paint:{
+        'line-color':'#007aff',
+        'line-width':4.5,
+        'line-opacity':1,
+        'line-cap':'round',
+        'line-join':'round'
+      }
+    });
+
+    const currentFloorIndex = getFloorIndexFromLevelId(currentLevel);
+    const extrusionData = buildRouteExtrusion(path, currentFloorIndex);
+
+    if (map.getSource('route-3d')) {
+      map.getSource('route-3d').setData(extrusionData);
+    } else {
+      map.addSource('route-3d',{
+        type:'geojson',
+        data: extrusionData
+      });
     }
-  } catch (err) {
-    console.warn('drawRoute: could not compute/focus bounds', err);
+
+    if (!map.getLayer('route-3d-shadow')) {
+      map.addLayer({
+        id:'route-3d-shadow',
+        type:'fill',
+        source:'route-3d',
+        paint:{
+          'fill-color':'rgba(0,0,0,0.12)',
+          'fill-opacity':0.12
+        }
+      });
+    }
+
+    if (!map.getLayer('route-3d')) {
+      map.addLayer({
+        id:'route-3d',
+        type:'fill',
+        source:'route-3d',
+        paint:{
+          'fill-color':[
+            'case',
+            ['==',['get','isCurrentLevel'],true],
+            '#1c8cff',
+            '#b0b8c5'
+          ],
+          'fill-opacity':[
+            'case',
+            ['==',['get','isCurrentLevel'],true],
+            0.9,
+            0.4
+          ]
+        }
+      });
+    }
+
+    bringRouteToFront();
+
+    const bounds = new maplibregl.LngLatBounds();
+    path.forEach(p=>bounds.extend([p[0],p[1]]));
+    map.fitBounds(bounds,{padding:80,duration:1200});
+
+    startRouteMarkerAnimation(path);
+    lastRoutePath = path;
   }
-}
 
-
-
-  function updateRouteInfo(path) {
-    if (!path || path.length < 2) {
-      routeInfo.textContent = '';
-      directionsList.innerHTML = '';
+  function updateRouteInfo(path){
+    if(!path || path.length<2){
+      routeInfo.textContent="";
+      directionsList.innerHTML="";
       return;
     }
-    let total = 0;
-    for (let i = 0; i < path.length - 1; i++) {
-      total += distance(path[i], path[i+1]);
+    let total=0;
+    for(let i=0;i<path.length-1;i++){
+      total+=distance(path[i],path[i+1]);
     }
-    const metersTotal = total * 111139;
+    const floors = new Set(path.map(p => (p[2] ?? 0)));
+    const metersTotal = total*111139;
     routeInfo.innerHTML =
-      `Distance: <b>${metersTotal.toFixed(1)} m</b>`;
-    directionsList.innerHTML = '';
+      `Distance: <b>${metersTotal.toFixed(1)} m</b><br>` +
+      `Floors passed: <b>${floors.size}</b>`;
+
+    directionsList.innerHTML="";
+
+    const toMeters = (a,b)=> distance(a,b)*111139;
+    const bearing = (a,b)=> Math.atan2(b[1]-a[1], b[0]-a[0]);
+    const angleDiffDeg = (b1,b2)=>{
+      let d = (b2-b1)*180/Math.PI;
+      while(d>180) d-=360;
+      while(d<-180) d+=360;
+      return d;
+    };
+
+    let stepIndex=1;
+    let currentFloor=path[0][2] ?? 0;
+    let prevBearing=null;
+
+    for(let i=0;i<path.length-1;i++){
+      const a = path[i];
+      const b = path[i+1];
+      const segLen = toMeters(a,b);
+      const brg = bearing(a,b);
+      let text="";
+
+      if(i===0){
+        text = `${stepIndex++}. Walk about ${segLen.toFixed(0)} m straight.`;
+      } else {
+        const diff = angleDiffDeg(prevBearing, brg);
+        let turnWord = 'straight';
+        if(Math.abs(diff) < 30){
+          turnWord = 'straight';
+        } else if(diff > 0){
+          turnWord = 'left';
+        } else {
+          turnWord = 'right';
+        }
+        if(i === path.length-2){
+          text = `${stepIndex++}. Turn ${turnWord} and walk ${segLen.toFixed(0)} m to reach your destination.`;
+        } else {
+          text = `${stepIndex++}. Turn ${turnWord} and walk about ${segLen.toFixed(0)} m.`;
+        }
+      }
+
+      const div=document.createElement('div');
+      div.className='direction-step';
+      div.textContent=text;
+      directionsList.appendChild(div);
+
+      const nextFloor = (path[i+1][2] ?? currentFloor);
+      if(nextFloor!==currentFloor){
+        const fDiv=document.createElement('div');
+        fDiv.className='direction-step';
+        fDiv.textContent = `Floor change: go from level Z=${currentFloor} to Z=${nextFloor}.`;
+        directionsList.appendChild(fDiv);
+        currentFloor=nextFloor;
+      }
+
+      prevBearing = brg;
+    }
   }
 
   function routeRooms(fromId, toId){
@@ -1192,22 +1258,6 @@ function drawRoute(path) {
       clearRoute();
       return;
     }
-function updateRouteStyleForCurrentLevel() {
-  // لو مفيش layers لسه، نخرج بس
-  if (!map.getLayer('route') || !map.getLayer('route-casing')) return;
-
-  map.setPaintProperty('route-casing', 'line-color', [
-    'case',
-    ['==', ['get', 'level'], currentLevel], '#cde8ff',
-    '#e5e7eb'
-  ]);
-
-  map.setPaintProperty('route', 'line-color', [
-    'case',
-    ['==', ['get', 'level'], currentLevel], '#007aff',
-    '#b0b4bd'
-  ]);
-}
 
     const sn=findNearestNode(fr.center, nodesByLevel[fr.level] || []);
     const en=findNearestNode(to.center, nodesByLevel[to.level] || []);
@@ -1404,40 +1454,23 @@ function updateRouteStyleForCurrentLevel() {
     };
   }
 
-  if (loginSaveBtn) {
-    loginSaveBtn.onclick = () => {
+  if(loginSaveBtn){
+    loginSaveBtn.onclick = ()=>{
       const name = (loginNameInput.value || '').trim() || 'Student';
       const levelVal = loginLevelSelect.value;
       const groupVal = loginGroupSelect.value || 'G1';
-
-      if (!levelVal) {
+      if(!levelVal){
         alert('اختر المستوى الدراسي');
         return;
       }
-
-      studentProfile = { name, level: levelVal, group: groupVal };
-      try {
-        localStorage.setItem('cuProfile', JSON.stringify(studentProfile));
-      } catch (e) {}
-
-      if (studentNameInput) studentNameInput.value = name;
-      if (studentLevelSelect) studentLevelSelect.value = levelVal;
-      if (studentGroupSelect) studentGroupSelect.value = groupVal;
-
+      studentProfile = {name, level: levelVal, group: groupVal};
+      try{ localStorage.setItem('cuProfile', JSON.stringify(studentProfile)); }catch(e){}
+      if(studentNameInput) studentNameInput.value = name;
+      if(studentLevelSelect) studentLevelSelect.value = levelVal;
+      if(studentGroupSelect && groupVal) studentGroupSelect.value = groupVal;
       setupScheduleAndLecture();
       hideLoginOverlay();
-
-      if (firstLecture) {
-        routeToFirstLecture();
-      } else {
-        map.easeTo({
-          center: [31.20, 30.03],
-          zoom: 18.7,
-          pitch: 60,
-          bearing: -20,
-          duration: 1000
-        });
-      }
+      routeToFirstLecture();
     };
   }
 
@@ -1508,6 +1541,151 @@ function updateRouteStyleForCurrentLevel() {
     drawLevel(room.level);
     markFloor(room.level);
     map.easeTo({center: room.center, zoom: 19, duration: 1200});
+  }
+
+  // ====== helper: find room by HALL code & highlight ======
+  function findRoomByCode(hallCode){
+    const target = hallCode.replace(/\s+/g,'').toUpperCase();
+    return rooms.find(r=>{
+      const normalized = (r.name || '').replace(/\s+/g,'').toUpperCase();
+      return normalized === target;
+    });
+  }
+
+  function highlightRoom(room, color='#ff1744'){
+    if(!room) return;
+    const feature = unitsData.features[room.id];
+    if(!feature || !feature.geometry) return;
+
+    const fc = {
+      type:'FeatureCollection',
+      features:[{
+        type:'Feature',
+        properties:{ color },
+        geometry: feature.geometry
+      }]
+    };
+
+    if(map.getSource('highlight-room')){
+      map.getSource('highlight-room').setData(fc);
+    } else {
+      map.addSource('highlight-room',{
+        type:'geojson',
+        data: fc
+      });
+      map.addLayer({
+        id:'highlight-room-fill',
+        type:'fill',
+        source:'highlight-room',
+        paint:{
+          'fill-color':['get','color'],
+          'fill-opacity':0.7
+        }
+      });
+      map.addLayer({
+        id:'highlight-room-outline',
+        type:'line',
+        source:'highlight-room',
+        paint:{
+          'line-color':['get','color'],
+          'line-width':2
+        }
+      });
+    }
+
+    if(currentLevel !== room.level){
+      drawLevel(room.level);
+      markFloor(room.level);
+    }
+
+    map.easeTo({
+      center: room.center,
+      zoom: Math.max(map.getZoom(), 19),
+      duration: 800
+    });
+
+    bringRouteToFront();
+  }
+
+  // ====== AI command parser: routing + highlight ======
+  function handleAiCommand(message){
+    const msg = message.trim();
+    if(!msg) return false;
+
+    const lower = msg.toLowerCase();
+
+    // 1) أول محاضرة / first lecture
+    if(lower.includes('اول محاضرة') || lower.includes('أول محاضرة') || lower.includes('first lecture')){
+      if(firstLecture){
+        routeToFirstLecture();
+        appendAiMessage('ai','رسمتلك مسار لأول محاضرة 👌');
+      } else {
+        appendAiMessage('ai','مش شايف جدول محاضرات مضبوط دلوقتي.');
+      }
+      return true;
+    }
+
+    // 2) استخرج كل HALLXYZ من الرسالة
+    const hallCodes = [];
+    const re = /HALL\s*([0-9]+)/gi;
+    let m;
+    while((m = re.exec(msg)) !== null){
+      hallCodes.push('HALL' + m[1]);
+    }
+
+    // 2.a route من هول لهول: "من HALL161 لـ HALL655"
+    if(hallCodes.length >= 2){
+      const fromHall = hallCodes[0];
+      const toHall   = hallCodes[1];
+      const fromRoom = findRoomByCode(fromHall);
+      const toRoom   = findRoomByCode(toHall);
+
+      if(fromRoom && toRoom){
+        routeRooms(fromRoom.id, toRoom.id);
+        fromPanel.value = fromRoom.id;
+        toPanel.value = toRoom.id;
+        appendAiMessage('ai',`هوجّهك من ${fromRoom.name} لـ ${toRoom.name} ✅`);
+      } else {
+        appendAiMessage('ai','مش قادر ألاقي واحد من الهولات اللي قلتهم على الخريطة.');
+      }
+      return true;
+    }
+
+    // 2.b هول واحد: "فين HALL161" / "ودّيني HALL161"
+    if(hallCodes.length === 1){
+      const hall = hallCodes[0];
+      const room = findRoomByCode(hall);
+      if(!room){
+        appendAiMessage('ai',`مش لاقي ${hall} على الخريطة.`);
+        return true;
+      }
+
+      // لو المستخدم قال "وديني" أو "روح" أو "from" → route من المدخل
+      const wantsRoute =
+        lower.includes('وديني') ||
+        lower.includes('ودّيني') ||
+        lower.includes('روح') ||
+        lower.includes('route') ||
+        lower.includes('go to') ||
+        lower.includes('from entrance') ||
+        lower.includes('من المدخل');
+
+      highlightRoom(room,'#ff1744');
+
+      if(wantsRoute){
+        const fromId = (entranceRoomId != null) ? entranceRoomId : room.id;
+        fromPanel.value = fromId;
+        toPanel.value = room.id;
+        routeRooms(fromId, room.id);
+        appendAiMessage('ai',`رسمتلك مسار لـ ${room.name} من المدخل 👣`);
+      } else {
+        appendAiMessage('ai',`دي ${room.name}، ظهرتلك باللون الأحمر على الخريطة ✅`);
+      }
+      return true;
+    }
+
+    // مفيش أوامر واضحة → نرجع للـ backend
+    return false;
   }
 
   // ===== AI CHAT HOOKUP =====
@@ -1588,7 +1766,7 @@ function updateRouteStyleForCurrentLevel() {
     });
   }
 
-  appendAiMessage('ai', 'أهلا بيك في CU Navigate AI 👋 اسألني عن محاضراتك أو أي سؤال تاني.');
+  appendAiMessage('ai', 'أهلا بيك في CU Navigate AI 👋 اسألني عن محاضراتك أو قولّي مثلاً: فين HALL161؟ أو ودّيني من HALL161 لـ HALL655.');
 
   // ===== User panel toggle =====
   const userPanel = document.getElementById('user-panel');
