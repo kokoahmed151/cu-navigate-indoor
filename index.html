@@ -394,6 +394,92 @@
     .ai-float-btn:hover{
       background:#124b7a;
     }
+    /* =====  Mobile layout (phones)  ===== */
+@media (max-width: 768px) {
+  html, body, #map {
+    width: 100%;
+    height: 100vh;
+  }
+
+  /* Top bar أوسع شوية */
+  #top-bar{
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 95%;
+    height: 44px;
+    padding: 6px 10px;
+    gap: 6px;
+  }
+
+  #logo{
+    font-size: 18px;
+  }
+
+  #search-box{
+    font-size: 12px;
+    padding: 0 10px;
+  }
+
+  .top-btn{
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+
+  /* Navigation panel فوق في النص ويغطي تقريبًا نص الشاشة */
+  #side-panel{
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 94%;
+    max-height: 38vh;
+    overflow-y: auto;
+  }
+
+  /* Floors bar على اليمين فوق بالطول */
+  #floors-bar{
+    right: 10px;
+    top: 60px;
+    width: 52px;
+  }
+
+  /* My Day panel تحت شوية وبالعرض */
+  #user-panel{
+    top: auto;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 94%;
+  }
+
+  /* ADS تحت خالص في الشمال لكن برضه بعرض الشاشة تقريبًا */
+  #ads-panel{
+    left: 50%;
+    transform: translateX(-50%);
+    width: 94%;
+    bottom: 10px;
+  }
+
+  /* AI panel + الزرار العايم */
+  #ai-panel{
+    right: 10px;
+    bottom: 80px;
+    width: 92%;
+    max-height: 45vh;
+  }
+
+  .ai-float-btn{
+    right: 10px;
+    bottom: 20px;
+  }
+
+  /* Map controls تتحرك شوية لفوق */
+  .map-controls{
+    right: 10px;
+    bottom: 90px;
+  }
+}
+
   </style>
 </head>
 
@@ -1625,15 +1711,35 @@ map.on('load', async ()=>{
       return true;
     }
 
-    // 2) استخرج كل HALLXYZ من الرسالة
+    // 2) استخرج كل HALLXYZ أو "مدرج 559" من الرسالة
     const hallCodes = [];
-    const re = /HALL\s*([0-9]+)/gi;
+
+    // HALL559 أو HALL 559
+    let re = /HALL\s*([0-9]+)/gi;
     let m;
-    while((m = re.exec(msg)) !== null){
+    while ((m = re.exec(msg)) !== null) {
       hallCodes.push('HALL' + m[1]);
     }
 
-    // 2.a route من هول لهول: "من HALL161 لـ HALL655"
+    // لو مفيش، جرّب "مدرج 559" أو amphi
+    if (hallCodes.length === 0) {
+      re = /(?:مدرج|amphi|amphitheatre|amphitheater)\s*([0-9]+)/gi;
+      let m2;
+      while ((m2 = re.exec(msg)) !== null) {
+        hallCodes.push('HALL' + m2[1]);
+      }
+    }
+
+    // لو برضه مفيش، أي رقم 3 أرقام في الجملة
+    if (hallCodes.length === 0) {
+      re = /\b([0-9]{3})\b/g;
+      let m3;
+      while ((m3 = re.exec(msg)) !== null) {
+        hallCodes.push('HALL' + m3[1]);
+      }
+    }
+
+    // 2.a route من هول لهول
     if(hallCodes.length >= 2){
       const fromHall = hallCodes[0];
       const toHall   = hallCodes[1];
@@ -1651,7 +1757,7 @@ map.on('load', async ()=>{
       return true;
     }
 
-    // 2.b هول واحد: "فين HALL161" / "ودّيني HALL161"
+    // 2.b هول واحد
     if(hallCodes.length === 1){
       const hall = hallCodes[0];
       const room = findRoomByCode(hall);
@@ -1660,7 +1766,6 @@ map.on('load', async ()=>{
         return true;
       }
 
-      // لو المستخدم قال "وديني" أو "روح" أو "from" → route من المدخل
       const wantsRoute =
         lower.includes('وديني') ||
         lower.includes('ودّيني') ||
@@ -1688,7 +1793,7 @@ map.on('load', async ()=>{
     return false;
   }
 
-   // ===== AI CHAT HOOKUP =====
+  // ===== AI CHAT HOOKUP =====
   const aiMessages = document.getElementById('ai-messages');
   const aiInput    = document.getElementById('ai-input');
   const aiSendBtn  = document.getElementById('ai-send-btn');
@@ -1737,6 +1842,11 @@ map.on('load', async ()=>{
     if (!msg) return;
     appendAiMessage("user", msg);
     aiInput.value = "";
+
+    // 🟢 نفذ أوامر الخريطة لو الرسالة تخص هول/محاضرة
+    if (handleAiCommand(msg)) {
+      return;
+    }
 
     try {
       const res = await fetch(`${apiBase}/api/chat`, {
