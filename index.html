@@ -68,23 +68,6 @@
       background:#f1f5f9;
     }
 
-    /* Mobile navigation toggle button (hidden on desktop) */
-    .nav-toggle-mobile{
-      display:none;
-      position:absolute;
-      left:20px;
-      top:70px;
-      z-index:2100;
-      padding:8px 16px;
-      border-radius:999px;
-      border:none;
-      background:#0a3d62;
-      color:#fff;
-      font-size:14px;
-      font-weight:600;
-      box-shadow:0 4px 14px rgba(0,0,0,0.2);
-    }
-
     /* SIDE PANEL */
     #side-panel{
       position:absolute;top:60px;left:20px;width:300px;
@@ -412,49 +395,187 @@
       background:#124b7a;
     }
 
-    /* ========== MOBILE LAYOUT (max-width: 768px) ========== */
-    @media (max-width: 768px){
+    /* MOBILE TOGGLE BUTTONS */
+    .mobile-toggle-btn{
+      display:none;
+      position:absolute;
+      left:15px;
+      width:auto;
+      padding:10px 16px;
+      background:linear-gradient(135deg,#0a3d62,#124b7a);
+      color:#fff;
+      border:none;
+      border-radius:12px;
+      font-size:13px;
+      font-weight:600;
+      cursor:pointer;
+      z-index:2100;
+      box-shadow:0 4px 15px rgba(0,0,0,0.2);
+      transition:0.2s;
+    }
+    .mobile-toggle-btn:hover{
+      opacity:0.9;
+    }
+    #nav-toggle-btn{
+      top:80px;
+    }
+    #mayday-toggle-btn{
+      top:130px;
+      background:linear-gradient(135deg,#ee5253,#d63031);
+    }
 
-      /* Top bar */
-      #top-bar{
-        width:94vw;
-        left:50%;
-        top:10px;
+    /* MOBILE STYLES */
+    @media (max-width: 768px) {
+      /* Show mobile toggle buttons */
+      .mobile-toggle-btn{
+        display:flex;
+        align-items:center;
+        gap:6px;
       }
 
-      /* زر Navigation يظهر على الموبايل بس */
-      .nav-toggle-mobile{
-        display:block;
-      }
-
-      /* Panel المسار overlay */
+      /* Hide side panel by default on mobile */
       #side-panel{
-        width:92vw;
-        left:4vw;
-        top:70px;
-        z-index:2200;
+        display:none;
+        position:fixed;
+        top:50%;
+        left:50%;
+        transform:translate(-50%,-50%);
+        width:90%;
+        max-width:320px;
+        max-height:70vh;
+        overflow-y:auto;
+        z-index:2500;
+      }
+      #side-panel.mobile-open{
+        display:block;
+        animation:fadeSlide 0.3s ease;
       }
 
-      /* My Day panel */
+      /* Hide user panel by default on mobile */
       #user-panel{
-        width:92vw;
-        left:4vw;
-        right:auto;
+        display:none;
+        position:fixed;
+        top:50%;
+        left:50%;
+        transform:translate(-50%,-50%);
+        width:90%;
+        max-width:320px;
+        max-height:60vh;
+        overflow-y:auto;
+        z-index:2500;
+      }
+      #user-panel.mobile-open{
+        display:block;
+        animation:fadeSlide 0.3s ease;
       }
 
-      /* Ads panel نص الشاشة تقريبًا */
+      /* Ads panel mobile - small strip on left */
       #ads-panel{
-        width:92vw;
-        left:4vw;
-        right:auto;
-        max-height:45vh;
+        position:fixed;
+        left:10px;
+        bottom:10px;
+        width:140px;
+        max-height:50vh;
+        padding:10px;
+        border-radius:12px;
+      }
+      #ads-panel .ads-title{
+        font-size:12px;
+        margin-bottom:4px;
+      }
+      #ads-list{
+        max-height:calc(50vh - 40px);
         overflow-y:auto;
       }
+      #ads-list .ad-card{
+        padding:6px 8px;
+        margin-bottom:4px;
+      }
+      #ads-list .ad-title{
+        font-size:11px;
+      }
+      #ads-list .ad-text{
+        font-size:10px;
+        display:-webkit-box;
+        -webkit-line-clamp:2;
+        -webkit-box-orient:vertical;
+        overflow:hidden;
+      }
+      #ads-list .ad-badge{
+        font-size:9px;
+      }
 
-      /* أزرار الأدوار */
+      /* Top bar mobile adjustments */
+      #top-bar{
+        width:92%;
+        padding:6px 12px;
+        height:44px;
+      }
+      #logo{
+        font-size:16px;
+      }
+      #search-box{
+        height:30px;
+        font-size:12px;
+      }
+      .top-btn{
+        padding:5px 10px;
+        font-size:11px;
+      }
+
+      /* Search results mobile */
+      #search-results{
+        width:85%;
+        top:65px;
+      }
+
+      /* Floors bar mobile */
       #floors-bar{
         right:10px;
-        top:120px;
+        top:80px;
+        width:45px;
+      }
+      .floor-btn{
+        padding:8px 0;
+        font-size:11px;
+      }
+
+      /* Map controls mobile */
+      .map-controls{
+        bottom:15px;
+        right:10px;
+      }
+      .ctrl-btn{
+        width:38px;
+        height:38px;
+        font-size:18px;
+      }
+
+      /* AI panel mobile */
+      #ai-panel{
+        right:10px;
+        bottom:65px;
+        width:280px;
+        max-height:220px;
+      }
+      .ai-float-btn{
+        right:10px;
+        bottom:15px;
+        width:45px;
+        height:45px;
+        font-size:18px;
+      }
+
+      /* Mobile overlay backdrop */
+      .mobile-overlay{
+        display:none;
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,0.4);
+        z-index:2400;
+      }
+      .mobile-overlay.active{
+        display:block;
       }
     }
   </style>
@@ -469,9 +590,6 @@
   <button id="resetRouteBtn" class="top-btn">Reset</button>
 </div>
 <div id="search-results"></div>
-
-<!-- Mobile Navigation toggle button -->
-<button id="nav-toggle-mobile" class="nav-toggle-mobile">Navigation</button>
 
 <!-- SIDE PANEL -->
 <div id="side-panel">
@@ -565,6 +683,13 @@
 <!-- FLOORS BAR -->
 <div id="floors-bar"></div>
 
+<!-- MOBILE TOGGLE BUTTONS -->
+<button id="nav-toggle-btn" class="mobile-toggle-btn">📍 Navigation</button>
+<button id="mayday-toggle-btn" class="mobile-toggle-btn">🆘 Maydays</button>
+
+<!-- MOBILE OVERLAY -->
+<div id="mobile-overlay" class="mobile-overlay"></div>
+
 <!-- CONTROLS -->
 <div class="map-controls">
   <div class="ctrl-btn" id="zoomIn">+</div>
@@ -576,7 +701,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.js"></script>
 <script>
-// ===== Demo schedule =====
+// ===== Demo schedule (كما هو) =====
 const scheduleData = {
   G1: [
     { day:'Sun', time:'09:00', subject:'Operating Systems', hall:'HALL559' },
@@ -713,13 +838,13 @@ function dijkstra(graph,start,end){
   return path;
 }
 
-// floor index from LEVEL_ID
+// *** NEW: تحويل LEVEL_ID إلى floorIndex (0,1,2,...) ***
 function getFloorIndexFromLevelId(lvl){
   const m = String(lvl).match(/\d+/);
   return m ? parseInt(m[0],10) - 1 : 0;
 }
 
-// build 2D tiled route (MazeMap style)
+// *** NEW: buildRouteExtrusion بنسخة MazeMap (بلاطات 2D + isCurrentLevel) ***
 function buildRouteExtrusion(path, currentFloorIndex) {
   const width = 0.000012;
   const features = [];
@@ -765,9 +890,12 @@ function buildRouteExtrusion(path, currentFloorIndex) {
   return { type: 'FeatureCollection', features };
 }
 
+
+
 /* Animation vars */
 let animatedMarker = null;
 let animationFrameId = null;
+// *** NEW: نخزن آخر مسار مرسوم عشان نلوّنه حسب الدور ***
 let lastRoutePath = null;
 
 // profile / schedule / ads
@@ -806,23 +934,6 @@ map.on('load', async ()=>{
   const floorsBar = document.getElementById('floors-bar');
   let currentLevel = levels[0];
 
-  // ===== Mobile navigation panel toggle =====
-  const navPanel = document.getElementById('side-panel');
-  const navToggleMobile = document.getElementById('nav-toggle-mobile');
-  const isMobile = window.matchMedia('(max-width: 768px)').matches;
-  let navOpenMobile = !isMobile; // على الموبايل يبدأ مقفول
-
-  if (isMobile && navPanel) {
-    navPanel.style.display = 'none';
-  }
-
-  if (navToggleMobile && navPanel && isMobile) {
-    navToggleMobile.addEventListener('click', ()=>{
-      navOpenMobile = !navOpenMobile;
-      navPanel.style.display = navOpenMobile ? 'block' : 'none';
-    });
-  }
-
   const nodesByLevel = {};
   levels.forEach(lvl=>{
     const lvlPW=pathwaysData.features.filter(f=>f.properties.LEVEL_ID===lvl);
@@ -846,7 +957,7 @@ map.on('load', async ()=>{
     return [sx/n, sy/n];
   }
 
-  // Rooms from Units
+  // Rooms من Units مع trim للأسماء
   unitsData.features.forEach((f,i)=>{
     const props=f.properties || {};
     let rawName = props.USE_TYPE || props.NAME || props.NAME_LONG || `Unit ${i}`;
@@ -875,21 +986,13 @@ map.on('load', async ()=>{
     });
   }
 
-  // bring route + highlight to front
+  // *** UPDATED: نخلي كل لايرات الراوت فوق بما فيها الـ casing الجديد ***
   function bringRouteToFront(){
-    [
-      'highlight-room-outline',
-      'highlight-room-fill',
-      'route-3d-shadow',
-      'route-3d',
-      'route-casing',
-      'route'
-    ].forEach(id=>{
+    ['route-3d-shadow','route-3d','route-casing','route'].forEach(id=>{
       if(map.getLayer(id)) map.moveLayer(id);
     });
   }
 
-  // draw one level
   function drawLevel(lvl){
     const sources = ['indoor-level','indoor-details','indoor-pathways','indoor-transitions','indoor-units'];
     const layers  = ['level-bg','walls','walls-flat','pathways','transitions','units','labels-rooms'];
@@ -926,10 +1029,7 @@ map.on('load', async ()=>{
       return f;
     });
 
-    map.addSource('indoor-details',{
-      type:'geojson',
-      data:{type:'FeatureCollection',features:polys}
-    });
+    map.addSource('indoor-details',{'type':'geojson','data':{type:'FeatureCollection',features:polys}});
 
     map.addLayer({
       id: 'walls',
@@ -961,13 +1061,14 @@ map.on('load', async ()=>{
       id:'walls-flat',
       type:'fill',
       source:'indoor-details',
+      filter:['!', ['match',['get','USE_TYPE'],true,false]],
       paint:{
         'fill-color':'#f9f8f4',
         'fill-opacity':0
       }
     });
 
-    // PATHWAYS
+    // PATHWAYS (لو حابب تخليها ظاهرة، ممكن تضيف layer هنا)
     const floorPw = pathwaysData.features.filter(f=>f.properties.LEVEL_ID===lvl);
     map.addSource('indoor-pathways',{
       type:'geojson',
@@ -1054,6 +1155,7 @@ map.on('load', async ()=>{
 
     currentLevel=lvl;
 
+    // لو في مسار متخزّن، نرجّع تلوينه حسب الدور الحالي
     if (lastRoutePath && lastRoutePath.length > 1 && map.getSource('route-3d')) {
       const currentFloorIndex = getFloorIndexFromLevelId(currentLevel);
       const extrusionData = buildRouteExtrusion(lastRoutePath, currentFloorIndex);
@@ -1077,6 +1179,7 @@ map.on('load', async ()=>{
   markFloor(currentLevel);
   drawLevel(currentLevel);
 
+  // ===== Route drawing / animation =====
   function startRouteMarkerAnimation(path) {
     if (animatedMarker) {
       animatedMarker.remove();
@@ -1130,6 +1233,7 @@ map.on('load', async ()=>{
     animationFrameId = requestAnimationFrame(animate);
   }
 
+  // *** UPDATED: clearRoute يشيل كمان route-casing + يخلي lastRoutePath = null ***
   function clearRoute() {
     if(map.getLayer('route')) map.removeLayer('route');
     if(map.getLayer('route-casing')) map.removeLayer('route-casing');
@@ -1154,9 +1258,11 @@ map.on('load', async ()=>{
     lastRoutePath = null;
   }
 
+  // *** UPDATED: drawRoute بنسخة MazeMap (line + casing + 2D fill) + الأنيميشن القديمة ***
   function drawRoute(path){
     clearRoute();
 
+    // خط المسار 2D
     const lineCoords = path.map(p => [p[0], p[1]]);
 
     map.addSource('route-line',{
@@ -1170,6 +1276,7 @@ map.on('load', async ()=>{
       }
     });
 
+    // casing فاتح تحت
     map.addLayer({
       id: 'route-casing',
       type: 'line',
@@ -1183,6 +1290,7 @@ map.on('load', async ()=>{
       }
     });
 
+    // خط أزرق فوقه
     map.addLayer({
       id:'route',
       type:'line',
@@ -1196,6 +1304,7 @@ map.on('load', async ()=>{
       }
     });
 
+    // بلاطات 2D فوق المسار للـ floors
     const currentFloorIndex = getFloorIndexFromLevelId(currentLevel);
     const extrusionData = buildRouteExtrusion(path, currentFloorIndex);
 
@@ -1365,12 +1474,6 @@ map.on('load', async ()=>{
       return;
     }
     routeRooms(f,t);
-
-    // على الموبايل بس: اقفل panel بعد ما يرسم المسار
-    if (isMobile && navPanel) {
-      navPanel.style.display = 'none';
-      navOpenMobile = false;
-    }
   };
 
   document.getElementById('resetRouteBtn').onclick = clearRoute;
@@ -1632,152 +1735,7 @@ map.on('load', async ()=>{
     map.easeTo({center: room.center, zoom: 19, duration: 1200});
   }
 
-  // ====== helper: find room by HALL code & highlight ======
-  function findRoomByCode(hallCode){
-    const target = hallCode.replace(/\s+/g,'').toUpperCase();
-    return rooms.find(r=>{
-      const normalized = (r.name || '').replace(/\s+/g,'').toUpperCase();
-      return normalized === target;
-    });
-  }
-
-  function highlightRoom(room, color='#ff1744'){
-    if(!room) return;
-    const feature = unitsData.features[room.id];
-    if(!feature || !feature.geometry) return;
-
-    const fc = {
-      type:'FeatureCollection',
-      features:[{
-        type:'Feature',
-        properties:{ color },
-        geometry: feature.geometry
-      }]
-    };
-
-    if(map.getSource('highlight-room')){
-      map.getSource('highlight-room').setData(fc);
-    } else {
-      map.addSource('highlight-room',{
-        type:'geojson',
-        data: fc
-      });
-      map.addLayer({
-        id:'highlight-room-fill',
-        type:'fill',
-        source:'highlight-room',
-        paint:{
-          'fill-color':['get','color'],
-          'fill-opacity':0.7
-        }
-      });
-      map.addLayer({
-        id:'highlight-room-outline',
-        type:'line',
-        source:'highlight-room',
-        paint:{
-          'line-color':['get','color'],
-          'line-width':2
-        }
-      });
-    }
-
-    if(currentLevel !== room.level){
-      drawLevel(room.level);
-      markFloor(room.level);
-    }
-
-    map.easeTo({
-      center: room.center,
-      zoom: Math.max(map.getZoom(), 19),
-      duration: 800
-    });
-
-    bringRouteToFront();
-  }
-
-  // ====== AI command parser: routing + highlight ======
-  function handleAiCommand(message){
-    const msg = message.trim();
-    if(!msg) return false;
-
-    const lower = msg.toLowerCase();
-
-    // 1) أول محاضرة / first lecture
-    if(lower.includes('اول محاضرة') || lower.includes('أول محاضرة') || lower.includes('first lecture')){
-      if(firstLecture){
-        routeToFirstLecture();
-        appendAiMessage('ai','رسمتلك مسار لأول محاضرة 👌');
-      } else {
-        appendAiMessage('ai','مش شايف جدول محاضرات مضبوط دلوقتي.');
-      }
-      return true;
-    }
-
-    // 2) استخرج كل HALLXYZ من الرسالة
-    const hallCodes = [];
-    const re = /HALL\s*([0-9]+)/gi;
-    let m;
-    while((m = re.exec(msg)) !== null){
-      hallCodes.push('HALL' + m[1]);
-    }
-
-    // 2.a route من هول لهول: "من HALL161 لـ HALL655"
-    if(hallCodes.length >= 2){
-      const fromHall = hallCodes[0];
-      const toHall   = hallCodes[1];
-      const fromRoom = findRoomByCode(fromHall);
-      const toRoom   = findRoomByCode(toHall);
-
-      if(fromRoom && toRoom){
-        routeRooms(fromRoom.id, toRoom.id);
-        fromPanel.value = fromRoom.id;
-        toPanel.value = toRoom.id;
-        appendAiMessage('ai',`هوجّهك من ${fromRoom.name} لـ ${toRoom.name} ✅`);
-      } else {
-        appendAiMessage('ai','مش قادر ألاقي واحد من الهولات اللي قلتهم على الخريطة.');
-      }
-      return true;
-    }
-
-    // 2.b هول واحد: "فين HALL161" / "ودّيني HALL161"
-    if(hallCodes.length === 1){
-      const hall = hallCodes[0];
-      const room = findRoomByCode(hall);
-      if(!room){
-        appendAiMessage('ai',`مش لاقي ${hall} على الخريطة.`);
-        return true;
-      }
-
-      // لو المستخدم قال "وديني" أو "روح" أو "from" → route من المدخل
-      const wantsRoute =
-        lower.includes('وديني') ||
-        lower.includes('ودّيني') ||
-        lower.includes('روح') ||
-        lower.includes('route') ||
-        lower.includes('go to') ||
-        lower.includes('from entrance') ||
-        lower.includes('من المدخل');
-
-      highlightRoom(room,'#ff1744');
-
-      if(wantsRoute){
-        const fromId = (entranceRoomId != null) ? entranceRoomId : room.id;
-        fromPanel.value = fromId;
-        toPanel.value = room.id;
-        routeRooms(fromId, room.id);
-        appendAiMessage('ai',`رسمتلك مسار لـ ${room.name} من المدخل 👣`);
-      } else {
-        appendAiMessage('ai',`دي ${room.name}، ظهرتلك باللون الأحمر على الخريطة ✅`);
-      }
-      return true;
-    }
-
-    // مفيش أوامر واضحة → نرجع للـ backend
-    return false;
-  }
-
-   // ===== AI CHAT HOOKUP =====
+  // ===== AI CHAT HOOKUP =====
   const aiMessages = document.getElementById('ai-messages');
   const aiInput    = document.getElementById('ai-input');
   const aiSendBtn  = document.getElementById('ai-send-btn');
@@ -1785,6 +1743,7 @@ map.on('load', async ()=>{
   const aiToggleBtn= document.getElementById('ai-toggle-btn');
 
   let aiPanelOpen = false;
+  let highlightedUnitId = null;
 
   function openAiPanel(){
     if(aiPanel){
@@ -1815,39 +1774,269 @@ map.on('load', async ()=>{
     aiMessages.scrollTop = aiMessages.scrollHeight;
   }
 
-  // 👇 نحدد الـ API base: لو لوكال يستعمل localhost، لو لا يستعمل Railway
-  const apiBase =
-    window.location.hostname === "localhost"
-      ? "http://localhost:3000"
-      : "https://cu-navigate-indoor-production.up.railway.app";
+  // ===== SMART AI COMMAND PARSER =====
+  
+  // تصحيح الأخطاء الإملائية الشائعة
+  function normalizeText(text) {
+    return text
+      .replace(/مدراج/g, 'مدرج')
+      .replace(/مدارج/g, 'مدرج')
+      .replace(/قاعة/g, 'مدرج')
+      .replace(/قاعه/g, 'مدرج')
+      .replace(/غرفة/g, 'مدرج')
+      .replace(/غرفه/g, 'مدرج')
+      .replace(/اوديتوريوم/g, 'مدرج')
+      .replace(/الى/g, 'إلى')
+      .replace(/الي/g, 'إلى')
+      .replace(/ل\s/g, 'إلى ')
+      .replace(/لـ/g, 'إلى ')
+      .replace(/جروب/g, 'group')
+      .replace(/مجموعة/g, 'group')
+      .replace(/المجموعة/g, 'group')
+      .replace(/الجروب/g, 'group')
+      .replace(/غير/g, 'change')
+      .replace(/بدل/g, 'change')
+      .replace(/حول/g, 'change');
+  }
 
-  async function sendAiMessage() {
-    const msg = (aiInput.value || "").trim();
-    if (!msg) return;
-    appendAiMessage("user", msg);
-    aiInput.value = "";
+  // استخراج رقم المدرج من النص
+  function extractHallNumber(text) {
+    // أنماط مختلفة للمدرج
+    const patterns = [
+      /مدرج\s*(\d+)/gi,
+      /hall\s*(\d+)/gi,
+      /room\s*(\d+)/gi,
+      /(\d{3})/g  // أي رقم من 3 أرقام
+    ];
+    
+    const numbers = [];
+    for (const pattern of patterns) {
+      let match;
+      while ((match = pattern.exec(text)) !== null) {
+        numbers.push(match[1]);
+      }
+    }
+    return [...new Set(numbers)]; // إزالة المكرر
+  }
 
-    try {
-      const res = await fetch(`${apiBase}/api/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+  // البحث عن غرفة بالرقم
+  function findRoomByNumber(number) {
+    const hallCode = 'HALL' + number;
+    return rooms.find(r => {
+      const normalized = r.name.replace(/\s+/g, '').toUpperCase();
+      return normalized === hallCode || 
+             normalized.includes(hallCode) ||
+             normalized === number ||
+             r.name.includes(number);
+    });
+  }
+
+  // تحديد غرفة باللون الأحمر
+  function highlightRoom(room) {
+    if (!room) return;
+    
+    highlightedUnitId = room.name;
+    
+    // الانتقال للدور الصحيح
+    drawLevel(room.level);
+    markFloor(room.level);
+    
+    // إضافة طبقة التحديد الأحمر
+    setTimeout(() => {
+      if (map.getLayer('units-highlight')) map.removeLayer('units-highlight');
+      if (map.getSource('units-highlight')) map.removeSource('units-highlight');
+      
+      const highlightFeatures = unitsData.features.filter(f => {
+        const props = f.properties || {};
+        const name = (props.USE_TYPE || props.NAME || '').trim();
+        return name === highlightedUnitId && f.properties.LEVEL_ID === room.level;
+      });
+      
+      if (highlightFeatures.length > 0) {
+        map.addSource('units-highlight', {
+          type: 'geojson',
+          data: { type: 'FeatureCollection', features: highlightFeatures }
+        });
+        
+        map.addLayer({
+          id: 'units-highlight',
+          type: 'fill',
+          source: 'units-highlight',
+          paint: {
+            'fill-color': '#ff0000',
+            'fill-opacity': 0.6
+          }
+        });
+      }
+      
+      // التركيز على الغرفة
+      map.easeTo({ center: room.center, zoom: 19, duration: 1000 });
+    }, 100);
+  }
+
+  // إزالة التحديد
+  function clearHighlight() {
+    highlightedUnitId = null;
+    if (map.getLayer('units-highlight')) map.removeLayer('units-highlight');
+    if (map.getSource('units-highlight')) map.removeSource('units-highlight');
+  }
+
+  // تغيير الجروب
+  function changeGroup(groupNum) {
+    const groupKey = 'G' + groupNum;
+    if (!scheduleData[groupKey]) {
+      return { success: false, message: `الجروب ${groupKey} مش موجود` };
+    }
+    
+    studentProfile = studentProfile || { name: 'Student', level: 'Level1' };
+    studentProfile.group = groupKey;
+    
+    // تحديث الـ UI
+    if (studentGroupSelect) studentGroupSelect.value = groupKey;
+    if (loginGroupSelect) loginGroupSelect.value = groupKey;
+    
+    // حفظ في localStorage
+    try { localStorage.setItem('cuProfile', JSON.stringify(studentProfile)); } catch(e) {}
+    
+    // تحديث الجدول
+    setupScheduleAndLecture();
+    
+    return { success: true, message: `تم تغيير الجروب إلى ${groupKey} ✅` };
+  }
+
+  // معالجة أوامر AI
+  function processAiCommand(message) {
+    const normalized = normalizeText(message);
+    const lowerMsg = normalized.toLowerCase();
+    
+    // 1. أمر تغيير الجروب
+    const groupMatch = lowerMsg.match(/(?:change|غير)\s*(?:group|الجروب)?\s*(?:إلى|ل)?\s*(?:g)?(\d)/i) ||
+                       lowerMsg.match(/group\s*(\d)/i) ||
+                       lowerMsg.match(/g(\d)/i);
+    
+    if (groupMatch || lowerMsg.includes('change') && lowerMsg.match(/\d/)) {
+      const num = groupMatch ? groupMatch[1] : lowerMsg.match(/(\d)/)[1];
+      const result = changeGroup(num);
+      return { handled: true, response: result.message };
+    }
+    
+    // 2. أمر التنقل من غرفة إلى غرفة
+    const navigationMatch = normalized.match(/(?:وديني|خدني|روح|من)\s+(?:من\s+)?(?:مدرج\s*)?(\d+)\s+(?:إلى|ل)\s+(?:مدرج\s*)?(\d+)/i) ||
+                           normalized.match(/من\s+(?:مدرج\s*)?(\d+)\s+(?:إلى|ل)\s+(?:مدرج\s*)?(\d+)/i);
+    
+    if (navigationMatch) {
+      const fromNum = navigationMatch[1];
+      const toNum = navigationMatch[2];
+      const fromRoom = findRoomByNumber(fromNum);
+      const toRoom = findRoomByNumber(toNum);
+      
+      if (!fromRoom) {
+        return { handled: true, response: `مش لاقي مدرج ${fromNum} 😕` };
+      }
+      if (!toRoom) {
+        return { handled: true, response: `مش لاقي مدرج ${toNum} 😕` };
+      }
+      
+      // تنفيذ التنقل
+      clearHighlight();
+      fromPanel.value = fromRoom.id;
+      toPanel.value = toRoom.id;
+      routeRooms(fromRoom.id, toRoom.id);
+      
+      return { 
+        handled: true, 
+        response: `جاري رسم المسار من مدرج ${fromNum} إلى مدرج ${toNum} 🗺️` 
+      };
+    }
+    
+    // 3. أمر البحث عن غرفة واحدة (فين مدرج X)
+    const halls = extractHallNumber(normalized);
+    if (halls.length === 1) {
+      const room = findRoomByNumber(halls[0]);
+      if (room) {
+        highlightRoom(room);
+        return { 
+          handled: true, 
+          response: `تم تحديد مدرج ${halls[0]} باللون الأحمر في الدور ${room.level} 📍` 
+        };
+      } else {
+        return { handled: true, response: `مش لاقي مدرج ${halls[0]} 😕` };
+      }
+    }
+    
+    // 4. أمر عرض الجدول
+    if (lowerMsg.includes('جدول') || lowerMsg.includes('محاضر') || lowerMsg.includes('schedule')) {
+      if (!currentSchedule || currentSchedule.length === 0) {
+        return { handled: true, response: 'مفيش جدول محفوظ. اختار الجروب الأول.' };
+      }
+      
+      let scheduleText = 'جدولك:\n';
+      currentSchedule.forEach((lec, i) => {
+        scheduleText += `${i+1}. ${lec.title} - ${lec.dayLabel} ${lec.time} (${lec.roomName})\n`;
+      });
+      return { handled: true, response: scheduleText };
+    }
+    
+    // 5. أمر المساعدة
+    if (lowerMsg.includes('مساعد') || lowerMsg.includes('help') || lowerMsg.includes('ازاي')) {
+      return { 
+        handled: true, 
+        response: `ممكن تقولي:
+• "فين مدرج 161" - هحدده بالأحمر
+• "وديني من مدرج 161 إلى 262" - هرسملك المسار
+• "غير الجروب لـ G2" - هغيرلك الجروب
+• "جدولي" - هعرضلك محاضراتك` 
+      };
+    }
+    
+    // 6. أمر مسح التحديد
+    if (lowerMsg.includes('امسح') || lowerMsg.includes('clear') || lowerMsg.includes('reset')) {
+      clearHighlight();
+      clearRoute();
+      return { handled: true, response: 'تم مسح كل شيء ✨' };
+    }
+    
+    // لم يتم التعرف على الأمر
+    return { handled: false };
+  }
+
+  async function sendAiMessage(){
+    const msg = (aiInput.value || '').trim();
+    if(!msg) return;
+    appendAiMessage('user', msg);
+    aiInput.value = '';
+
+    // محاولة معالجة الأمر محلياً أولاً
+    const result = processAiCommand(msg);
+    
+    if (result.handled) {
+      appendAiMessage('ai', result.response);
+      return;
+    }
+
+    // لو مش أمر معروف، نرسل للـ API
+    try{
+      const res = await fetch('http://localhost:3000/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json' },
         body: JSON.stringify({
           message: msg,
           profile: studentProfile,
-          schedule: currentSchedule,
-        }),
+          schedule: currentSchedule
+        })
       });
 
-      if (!res.ok) {
-        appendAiMessage("ai", "❌ حصل خطأ في الاتصال بالسيرفر.");
+      if(!res.ok){
+        appendAiMessage('ai', '❌ حصل خطأ في الاتصال بالسيرفر.');
         return;
       }
 
       const data = await res.json();
-      appendAiMessage("ai", data.reply || "ماقدرتش أطلع رد يا نجم.");
-    } catch (err) {
-      console.error("AI error:", err);
-      appendAiMessage("ai", "⚠️ حصل Error في الاتصال بالـ AI.");
+      appendAiMessage('ai', data.reply || 'ماقدرتش أطلع رد يا نجم.');
+    } catch(err){
+      console.error('AI error:', err);
+      // لو مفيش سيرفر، نرد رد افتراضي
+      appendAiMessage('ai', 'مش فاهم قصدك 🤔 جرب تقول "مساعدة" عشان أقولك أقدر أعملك إيه.');
     }
   }
 
@@ -1858,8 +2047,7 @@ map.on('load', async ()=>{
     });
   }
 
-  // رسالة ترحيب أول ما يفتح البوت
-  appendAiMessage('ai', 'أهلا بيك في CU Navigate AI 👋 اسألني عن محاضراتك أو أي سؤال تاني.');
+  appendAiMessage('ai', 'أهلا بيك 👋 قولي "وديني من مدرج 161 إلى 262" أو "فين مدرج 559" أو "غير الجروب لـ G2"');
 
   // ===== User panel toggle =====
   const userPanel = document.getElementById('user-panel');
@@ -1886,6 +2074,70 @@ map.on('load', async ()=>{
   // init
   loadProfileFromStorage();
   setupAds();
+
+  // ===== MOBILE TOGGLE FUNCTIONALITY =====
+  const navToggleBtn = document.getElementById('nav-toggle-btn');
+  const maydayToggleBtn = document.getElementById('mayday-toggle-btn');
+  const mobileOverlay = document.getElementById('mobile-overlay');
+  const sidePanel = document.getElementById('side-panel');
+
+  function isMobile() {
+    return window.innerWidth <= 768;
+  }
+
+  function closeAllMobilePanels() {
+    if(sidePanel) sidePanel.classList.remove('mobile-open');
+    if(userPanel) userPanel.classList.remove('mobile-open');
+    if(mobileOverlay) mobileOverlay.classList.remove('active');
+  }
+
+  // Navigation toggle
+  if(navToggleBtn && sidePanel) {
+    navToggleBtn.onclick = () => {
+      if(!isMobile()) return;
+      
+      const isOpen = sidePanel.classList.contains('mobile-open');
+      closeAllMobilePanels();
+      
+      if(!isOpen) {
+        sidePanel.classList.add('mobile-open');
+        mobileOverlay.classList.add('active');
+      }
+    };
+  }
+
+  // Maydays toggle (uses user-panel as Maydays/Schedule panel)
+  if(maydayToggleBtn && userPanel) {
+    maydayToggleBtn.onclick = () => {
+      if(!isMobile()) return;
+      
+      const isOpen = userPanel.classList.contains('mobile-open');
+      closeAllMobilePanels();
+      
+      if(!isOpen) {
+        userPanel.classList.add('mobile-open');
+        mobileOverlay.classList.add('active');
+      }
+    };
+  }
+
+  // Close panels when clicking overlay
+  if(mobileOverlay) {
+    mobileOverlay.onclick = closeAllMobilePanels;
+  }
+
+  // Close panels after route is found on mobile
+  const originalPanelRouteBtn = document.getElementById('panelRouteBtn');
+  if(originalPanelRouteBtn) {
+    const originalOnClick = originalPanelRouteBtn.onclick;
+    originalPanelRouteBtn.onclick = () => {
+      if(originalOnClick) originalOnClick();
+      if(isMobile()) {
+        setTimeout(closeAllMobilePanels, 300);
+      }
+    };
+  }
+
 });
 </script>
 
